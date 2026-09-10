@@ -1,0 +1,1458 @@
+<title>botiss Daily Desk</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Chivo:wght@600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+
+<style>
+/* ============================================================
+   botiss Daily Desk — the morning check-in board.
+   Three things, every day: where distributors sit against the
+   quarter, which orders are still waiting on an "ok", and how
+   close each BRD event is to being ready.
+
+   Identity: a departure board. Marine ink, slate-cool paper,
+   monospace figures, rules instead of cards, and a severity
+   rail spent only on rows that actually need attention.
+   Diverging poles validated for CVD separation in both themes.
+   ============================================================ */
+
+:root{
+  /* paper — slate-cool, biased toward the marine accent */
+  --ground:#EBEFF2;
+  --surface:#FFFFFF;
+  --surface-2:#F5F8FA;
+  --sunk:#E1E7EC;
+  --line:#D2DBE2;
+  --line-soft:#E5EBF0;
+
+  --ink:#0E1620;
+  --ink-2:#35485B;
+  --ink-3:#64798C;
+  --ink-inv:#F2F6F9;
+
+  /* accent — structure only, never a data colour */
+  --marine:#22496F;
+  --marine-deep:#173650;
+  --marine-wash:#E2EAF2;
+  --marine-line:#B9CBDD;
+
+  /* diverging poles (validated light: ΔE 10.9 deutan, 26.2 normal) */
+  --behind:#BE3A22;
+  --ahead:#008471;
+  --behind-wash:#FBE7E2;
+  --ahead-wash:#DFEFEC;
+
+  /* status — reserved, never a series colour */
+  --waiting:#8A6212;
+  --waiting-wash:#F8F0DA;
+  --done:#008471;
+  --done-wash:#DFEFEC;
+  --idle:#64798C;
+  --idle-wash:#E9EEF2;
+
+  --track:#E1E7EC;
+  --rule:#C6D2DB;
+
+  --shadow:0 1px 2px rgba(14,22,32,.05), 0 10px 28px -20px rgba(14,22,32,.35);
+
+  --f-disp:'Chivo','Helvetica Neue',Arial,sans-serif;
+  --f-body:'IBM Plex Sans',system-ui,-apple-system,'Segoe UI',sans-serif;
+  --f-mono:'IBM Plex Mono',ui-monospace,'SF Mono',Menlo,monospace;
+}
+
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --ground:#0A1017;
+    --surface:#121A22;
+    --surface-2:#17212A;
+    --sunk:#0D141B;
+    --line:#25323D;
+    --line-soft:#1B242D;
+
+    --ink:#E6ECF2;
+    --ink-2:#B0BFCC;
+    --ink-3:#7E90A0;
+    --ink-inv:#0A1017;
+
+    --marine:#79A8CE;
+    --marine-deep:#A8C8E4;
+    --marine-wash:#14222F;
+    --marine-line:#284457;
+
+    /* validated dark: ΔE 9.5 deutan, 25.2 normal */
+    --behind:#D66048;
+    --ahead:#1F9F86;
+    --behind-wash:#2D1712;
+    --ahead-wash:#0D2320;
+
+    --waiting:#D6A957;
+    --waiting-wash:#2A2210;
+    --done:#1F9F86;
+    --done-wash:#0D2320;
+    --idle:#7E90A0;
+    --idle-wash:#182129;
+
+    --track:#1E2932;
+    --rule:#2C3B47;
+
+    --shadow:0 1px 2px rgba(0,0,0,.45), 0 10px 28px -20px rgba(0,0,0,.8);
+  }
+}
+:root[data-theme="dark"]{
+  --ground:#0A1017;
+  --surface:#121A22;
+  --surface-2:#17212A;
+  --sunk:#0D141B;
+  --line:#25323D;
+  --line-soft:#1B242D;
+
+  --ink:#E6ECF2;
+  --ink-2:#B0BFCC;
+  --ink-3:#7E90A0;
+  --ink-inv:#0A1017;
+
+  --marine:#79A8CE;
+  --marine-deep:#A8C8E4;
+  --marine-wash:#14222F;
+  --marine-line:#284457;
+
+  --behind:#D66048;
+  --ahead:#1F9F86;
+  --behind-wash:#2D1712;
+  --ahead-wash:#0D2320;
+
+  --waiting:#D6A957;
+  --waiting-wash:#2A2210;
+  --done:#1F9F86;
+  --done-wash:#0D2320;
+  --idle:#7E90A0;
+  --idle-wash:#182129;
+
+  --track:#1E2932;
+  --rule:#2C3B47;
+
+  --shadow:0 1px 2px rgba(0,0,0,.45), 0 10px 28px -20px rgba(0,0,0,.8);
+}
+
+*{box-sizing:border-box}
+body{
+  margin:0; background:var(--ground); color:var(--ink);
+  font-family:var(--f-body); font-size:15px; line-height:1.5;
+  -webkit-font-smoothing:antialiased;
+}
+h1,h2,h3{font-family:var(--f-disp); font-weight:600; letter-spacing:-.015em; text-wrap:balance; margin:0}
+p{margin:0}
+button{font-family:inherit; font-size:inherit; color:inherit}
+:focus-visible{outline:2px solid var(--marine); outline-offset:2px; border-radius:4px}
+.num{font-family:var(--f-mono); font-variant-numeric:tabular-nums}
+
+/* ---------- day bar ---------- */
+.daybar{
+  position:sticky; top:0; z-index:40;
+  background:var(--surface); border-bottom:1px solid var(--line);
+}
+.daybar-in{
+  max-width:900px; margin:0 auto; padding-block:11px; padding-left:16px; padding-right:16px;
+  display:flex; align-items:center; gap:10px; flex-wrap:wrap;
+}
+.wordmark{font-family:var(--f-disp); font-weight:700; font-size:16.5px; letter-spacing:-.02em; white-space:nowrap}
+.wordmark span{color:var(--marine)}
+.today{
+  font-family:var(--f-mono); font-size:11.5px; color:var(--ink-3);
+  padding-left:11px; border-left:1px solid var(--line); white-space:nowrap;
+}
+.daybar .grow{flex:1 1 20px}
+
+.pill{
+  display:inline-flex; align-items:center; gap:6px; white-space:nowrap;
+  font-size:11.5px; font-weight:500; padding:4px 9px; border-radius:999px;
+  border:1px solid var(--line); background:var(--surface-2); color:var(--ink-2);
+}
+.pill .led{width:6px; height:6px; border-radius:999px; background:currentColor; flex-shrink:0}
+.pill.shared{border-color:var(--marine-line); background:var(--marine-wash); color:var(--marine-deep)}
+.pill.local{border-color:var(--line); background:var(--sunk); color:var(--ink-3)}
+
+/* ---------- tabs ---------- */
+.tabsrow{background:var(--surface); border-bottom:1px solid var(--line)}
+.tabs{
+  max-width:900px; margin:0 auto; padding-left:16px; padding-right:16px;
+  display:flex; gap:2px; overflow-x:auto; scrollbar-width:none;
+}
+.tabs::-webkit-scrollbar{display:none}
+.tab{
+  flex:0 0 auto; display:inline-flex; align-items:center; gap:7px;
+  padding:9px 12px 10px; border:none; background:none; cursor:pointer;
+  font-size:13.5px; font-weight:500; color:var(--ink-3);
+  border-bottom:2px solid transparent; margin-bottom:-1px;
+}
+.tab:hover{color:var(--ink-2)}
+.tab[aria-selected="true"]{color:var(--marine); border-bottom-color:var(--marine)}
+.tab .count{
+  font-family:var(--f-mono); font-size:10.5px; padding:1px 5px; border-radius:4px;
+  background:var(--sunk); color:var(--ink-3);
+}
+.tab .count.hot{background:var(--behind-wash); color:var(--behind)}
+.tab .count.warm{background:var(--waiting-wash); color:var(--waiting)}
+
+/* ---------- page ---------- */
+.wrap{max-width:900px; margin:0 auto; padding-block:20px 72px; padding-left:16px; padding-right:16px}
+.stack{display:flex; flex-direction:column; gap:16px}
+.stack.tight{gap:11px}
+
+.sect{background:var(--surface); border:1px solid var(--line); border-radius:10px; padding:15px 16px}
+.sect.plain{background:none; border:none; padding:0}
+.sect-head{display:flex; align-items:baseline; gap:10px; flex-wrap:wrap; margin-bottom:13px}
+.sect-head h2{font-size:14.5px; flex:1 1 auto; min-width:min(100%,12ch)}
+.sect-head .hint{font-size:11.5px; color:var(--ink-3); margin-left:auto; text-align:right}
+.eyebrow{
+  font-family:var(--f-mono); font-size:10px; font-weight:500; letter-spacing:.14em;
+  text-transform:uppercase; color:var(--marine);
+}
+.label{
+  font-family:var(--f-mono); font-size:10px; font-weight:500; letter-spacing:.12em;
+  text-transform:uppercase; color:var(--ink-3);
+}
+
+/* ---------- figures ---------- */
+.figs{
+  display:grid; grid-template-columns:repeat(auto-fit,minmax(142px,1fr)); gap:1px;
+  background:var(--line); border:1px solid var(--line); border-radius:10px; overflow:hidden;
+}
+.fig{background:var(--surface); padding:13px 14px}
+.fig .v{font-family:var(--f-disp); font-size:22px; font-weight:600; letter-spacing:-.02em; line-height:1.15;
+  font-variant-numeric:tabular-nums}
+.fig .k{font-size:12px; color:var(--ink-2); margin-top:5px; line-height:1.35}
+.fig .s{font-size:10.5px; color:var(--ink-3); margin-top:3px}
+.fig.behind .v{color:var(--behind)}
+.fig.ahead .v{color:var(--ahead)}
+
+/* ---------- chips ---------- */
+.chip{
+  display:inline-flex; align-items:center; gap:5px; white-space:nowrap;
+  font-size:11.5px; font-weight:500; padding:2px 7px; border-radius:5px;
+  background:var(--sunk); color:var(--ink-2);
+}
+.chip.behind{background:var(--behind-wash); color:var(--behind)}
+.chip.ahead{background:var(--ahead-wash); color:var(--ahead)}
+.chip.waiting{background:var(--waiting-wash); color:var(--waiting)}
+.chip.done{background:var(--done-wash); color:var(--done)}
+.chip.idle{background:var(--idle-wash); color:var(--ink-3)}
+.chip.marine{background:var(--marine-wash); color:var(--marine-deep)}
+.chip svg{width:12px; height:12px; stroke:currentColor; fill:none; stroke-width:2.1;
+  stroke-linecap:round; stroke-linejoin:round; flex-shrink:0}
+.chiprow{display:flex; flex-wrap:wrap; gap:6px; align-items:center}
+
+/* ---------- buttons & fields ---------- */
+.btn{
+  display:inline-flex; align-items:center; justify-content:center; gap:7px;
+  padding:8px 13px; border-radius:8px; border:1px solid var(--line);
+  background:var(--surface); color:var(--ink); font-size:13.5px; font-weight:500;
+  cursor:pointer; transition:border-color .15s, background .15s;
+}
+.btn:hover:not(:disabled){border-color:var(--ink-3)}
+.btn:disabled{opacity:.45; cursor:not-allowed}
+.btn.primary{background:var(--marine); border-color:var(--marine); color:#fff}
+:root[data-theme="dark"] .btn.primary,
+.btn.primary{color:#fff}
+.btn.primary:hover:not(:disabled){background:var(--marine-deep); border-color:var(--marine-deep)}
+.btn.sm{padding:5px 9px; font-size:12.5px; border-radius:7px}
+.btn.quiet{border-color:transparent; background:none; color:var(--ink-3); padding:5px 7px}
+.btn.quiet:hover{color:var(--behind); border-color:transparent}
+.btn svg{width:15px; height:15px; stroke:currentColor; fill:none; stroke-width:1.9;
+  stroke-linecap:round; stroke-linejoin:round; flex-shrink:0}
+.btnrow{display:flex; flex-wrap:wrap; gap:8px; align-items:center}
+
+label.fld{display:block; font-size:11px; font-weight:600; color:var(--ink-2); margin-bottom:4px}
+input,select,textarea{
+  width:100%; font-family:inherit; font-size:14px; color:var(--ink);
+  background:var(--surface); border:1px solid var(--line); border-radius:7px; padding:8px 9px;
+}
+input[type=number],input.money{font-family:var(--f-mono); font-variant-numeric:tabular-nums}
+textarea{resize:vertical; min-height:58px}
+input:focus,select:focus,textarea:focus{outline:none; border-color:var(--marine);
+  box-shadow:0 0 0 3px var(--marine-wash)}
+.formgrid{display:grid; grid-template-columns:repeat(auto-fit,minmax(132px,1fr)); gap:10px}
+.formgrid.wide{grid-template-columns:repeat(auto-fit,minmax(180px,1fr))}
+
+/* ---------- notices ---------- */
+.notice{
+  display:flex; gap:10px; padding:11px 13px; border-radius:9px; font-size:12.5px;
+  line-height:1.5; background:var(--waiting-wash); color:var(--waiting);
+  border:1px solid color-mix(in srgb, var(--waiting) 24%, transparent);
+}
+.notice.info{background:var(--marine-wash); color:var(--marine-deep); border-color:var(--marine-line)}
+.notice.bad{background:var(--behind-wash); color:var(--behind);
+  border-color:color-mix(in srgb, var(--behind) 26%, transparent)}
+.notice svg{width:16px; height:16px; flex-shrink:0; margin-top:2px;
+  stroke:currentColor; fill:none; stroke-width:1.9; stroke-linecap:round; stroke-linejoin:round}
+.notice .nbody{flex:1; min-width:0}
+.notice strong{font-weight:600}
+.notice .btn{margin-top:8px}
+
+/* ---------- pace chart (diverging, HTML/CSS marks) ---------- */
+.chartwrap{position:relative}
+.legend{display:flex; flex-wrap:wrap; gap:14px; font-size:11.5px; color:var(--ink-2); margin-bottom:11px}
+.legend span{display:inline-flex; align-items:center; gap:6px}
+.legend i{width:10px; height:10px; border-radius:2px; flex-shrink:0}
+
+.pace{display:flex; flex-direction:column; gap:5px}
+.pacerow{
+  display:grid; grid-template-columns:minmax(120px,212px) minmax(0,1fr) 104px;
+  gap:11px; align-items:center; padding:2px 0; border-radius:6px;
+}
+.pacerow:hover{background:var(--surface-2)}
+.pacerow .who{font-size:12.5px; color:var(--ink); overflow:hidden; text-overflow:ellipsis;
+  white-space:nowrap}
+.pacerow .who b{font-weight:600}
+.pacerow .amt{font-family:var(--f-mono); font-size:11.5px; text-align:right;
+  font-variant-numeric:tabular-nums}
+.pacerow .amt.behind{color:var(--behind)}
+.pacerow .amt.ahead{color:var(--ahead)}
+
+.track{position:relative; height:15px; background:var(--track); border-radius:3px}
+.track .zero{position:absolute; left:50%; top:-3px; bottom:-3px; width:1px;
+  background:var(--rule)}
+.bar{position:absolute; top:1px; bottom:1px; min-width:2px}
+.bar.behind{right:50%; margin-right:1px; background:var(--behind); border-radius:3px 0 0 3px}
+.bar.ahead{left:50%; margin-left:1px; background:var(--ahead); border-radius:0 3px 3px 0}
+
+.axis{display:grid; grid-template-columns:minmax(120px,212px) minmax(0,1fr) 104px; gap:11px;
+  margin-top:9px}
+.axis .scale{display:flex; justify-content:space-between; font-family:var(--f-mono);
+  font-size:10px; color:var(--ink-3); grid-column:2}
+.axis .scaleline{grid-column:2; position:relative; height:1px; background:var(--line-soft);
+  margin-bottom:5px}
+
+@media (max-width:600px){
+  .pacerow{grid-template-columns:minmax(0,1fr) auto; gap:3px 8px; padding:5px 0;
+    border-bottom:1px solid var(--line-soft)}
+  .pacerow .who{grid-column:1; grid-row:1}
+  .pacerow .amt{grid-column:2; grid-row:1}
+  .pacerow .chartwrap-cell{grid-column:1 / -1; grid-row:2}
+  .axis{grid-template-columns:1fr}
+  .axis .scale,.axis .scaleline{grid-column:1}
+}
+
+.tip{
+  position:absolute; pointer-events:none; opacity:0; transform:translate(-50%,-118%);
+  background:var(--ink); color:var(--ink-inv); font-size:11.5px; padding:7px 9px;
+  border-radius:7px; white-space:nowrap; transition:opacity .12s; z-index:20;
+  box-shadow:var(--shadow); line-height:1.45;
+}
+.tip b{font-weight:600}
+.tip .num{opacity:.88}
+
+/* ---------- rows / lists ---------- */
+.rows{display:flex; flex-direction:column}
+.row{
+  display:flex; gap:11px; align-items:flex-start; padding:11px 0;
+  border-bottom:1px solid var(--line-soft);
+}
+.row:last-child{border-bottom:none}
+.row .rail{width:3px; border-radius:999px; align-self:stretch; flex-shrink:0; background:transparent}
+.row.attention .rail{background:var(--behind)}
+.row.waiting-rail .rail{background:var(--waiting)}
+.row .rbody{flex:1; min-width:0}
+.row .rtitle{font-size:13.5px; font-weight:600; overflow-wrap:anywhere}
+.row .rmeta{font-size:11.5px; color:var(--ink-3); margin-top:3px; overflow-wrap:anywhere}
+.row .ract{flex-shrink:0}
+
+.grouphead{
+  display:flex; align-items:center; gap:9px; margin:16px 0 3px;
+  font-family:var(--f-mono); font-size:10px; font-weight:500; letter-spacing:.12em;
+  text-transform:uppercase; color:var(--ink-3);
+}
+.grouphead::after{content:""; flex:1; height:1px; background:var(--line-soft)}
+.grouphead:first-child{margin-top:0}
+
+.scroller{overflow-x:auto; -webkit-overflow-scrolling:touch}
+table{width:100%; border-collapse:collapse; font-size:13px}
+th{
+  font-family:var(--f-mono); font-size:9.5px; font-weight:500; letter-spacing:.1em;
+  text-transform:uppercase; color:var(--ink-3); text-align:left;
+  padding:7px 9px; border-bottom:1px solid var(--line); white-space:nowrap;
+}
+th.r,td.r{text-align:right}
+td{padding:8px 9px; border-bottom:1px solid var(--line-soft); vertical-align:middle}
+tbody tr:last-child td{border-bottom:none}
+tbody tr.attention td:first-child{box-shadow:inset 3px 0 0 var(--behind)}
+td.n{font-family:var(--f-mono); font-variant-numeric:tabular-nums; white-space:nowrap}
+td input{padding:5px 7px; font-size:12.5px}
+.empty{padding:22px 14px; text-align:center; color:var(--ink-3); font-size:13px}
+
+/* ---------- event blocks ---------- */
+.ev{background:var(--surface); border:1px solid var(--line); border-radius:10px; overflow:hidden}
+.ev.soon{border-color:color-mix(in srgb, var(--waiting) 42%, var(--line))}
+.ev > header{padding:13px 15px; border-bottom:1px solid var(--line-soft);
+  display:flex; gap:11px; align-items:flex-start; flex-wrap:wrap}
+.ev h3{font-size:14.5px; flex:1 1 190px; min-width:0; overflow-wrap:anywhere}
+.ev .when{font-family:var(--f-mono); font-size:11.5px; color:var(--ink-2); white-space:nowrap}
+.ev .speaker{font-size:11.5px; color:var(--ink-3); flex-basis:100%}
+.ready{display:flex; flex-direction:column}
+.ready .item{
+  display:grid; grid-template-columns:1fr 152px; gap:9px 13px; align-items:center;
+  padding:10px 15px; border-bottom:1px solid var(--line-soft);
+}
+.ready .item:last-child{border-bottom:none}
+.ready .item .nm{font-size:13px; font-weight:500}
+.ready .item .note{font-size:11px; color:var(--ink-3); margin-top:2px; line-height:1.4;
+  grid-column:1; overflow-wrap:anywhere}
+.ready .item select{font-size:12.5px; padding:6px 8px}
+.ready .item .selwrap{grid-column:2; grid-row:1 / span 2; align-self:center}
+@media (max-width:520px){
+  .ready .item{grid-template-columns:1fr}
+  .ready .item .selwrap{grid-column:1; grid-row:auto}
+}
+.ev > footer{padding:10px 15px; background:var(--surface-2); border-top:1px solid var(--line-soft);
+  display:flex; gap:8px; flex-wrap:wrap; align-items:center}
+
+/* ---------- report ---------- */
+.report{
+  font-family:var(--f-mono); font-size:12.5px; line-height:1.65; white-space:pre-wrap;
+  overflow-wrap:anywhere; background:var(--surface); color:var(--ink);
+  border:1px solid var(--line); border-radius:10px; padding:16px; margin:0;
+}
+.toast{
+  position:fixed; left:50%; bottom:22px; transform:translateX(-50%) translateY(12px);
+  background:var(--ink); color:var(--ink-inv); font-size:12.5px; padding:9px 14px;
+  border-radius:999px; box-shadow:var(--shadow); opacity:0; pointer-events:none;
+  transition:opacity .18s, transform .18s; z-index:60; max-width:calc(100vw - 32px);
+  text-align:center;
+}
+.toast.on{opacity:1; transform:translateX(-50%) translateY(0)}
+
+.foot{margin-top:26px; padding-top:14px; border-top:1px solid var(--line);
+  font-size:10.5px; line-height:1.6; color:var(--ink-3)}
+
+@media (prefers-reduced-motion:reduce){*{transition:none!important; animation:none!important}}
+</style>
+
+<div class="daybar">
+  <div class="daybar-in">
+    <div class="wordmark">botiss <span>Daily Desk</span></div>
+    <div class="today" id="todayStamp">—</div>
+    <div class="grow"></div>
+    <span class="pill local" id="storePill"><span class="led"></span>Checking store…</span>
+  </div>
+</div>
+
+<div class="tabsrow">
+  <div class="tabs" id="tabs" role="tablist" aria-label="Sections"></div>
+</div>
+
+<main class="wrap" id="view"></main>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script>
+"use strict";
+
+/* =====================================================================
+   1. THE RULES — lifted straight from the daily status check-in, so the
+      board and the report can never disagree with each other.
+      · gap = Q3 target − booked. Positive = behind pace.
+      · €0 target AND €0 booked = "no active target this year": its own
+        group at the bottom, never interleaved into the alphabetical list.
+      · Main list sorts alphabetically by country. "Needs attention"
+        ranks only the behind-pace ones, by absolute euro gap.
+      · A "?" in a distributor name means the name is unconfirmed. It is
+        carried over exactly as written, never resolved by guessing.
+      · Every event gets the same five readiness lines, in the same
+        order, even when all five are "no update yet".
+      · Nothing is ever guessed. Unreported = "no update yet".
+   ===================================================================== */
+
+const READY_ITEMS = [
+  { key:"travel",    name:"Speaker flight & travel",
+    note:"Flights, transfers and hotel for the speaker or KOL." },
+  { key:"samples",   name:"Sample shipment",
+    note:"Product samples out to the partner or distributor." },
+  { key:"materials", name:"Marketing materials & flyer",
+    note:"Event brand must read “biomaterials & REGENERATION DAYS” — never “DAY”." },
+  { key:"social",    name:"Social media post",
+    note:"botiss website, Instagram, Facebook, LinkedIn." },
+  { key:"certs",     name:"Attendance certificates (open-name PDF)",
+    note:"Open-name editable PDF from botiss, signed by the BRD president — never the speaker." }
+];
+
+const STATUSES = [
+  { key:"no_update", label:"no update yet", tone:"idle" },
+  { key:"not_done",  label:"not done",      tone:"behind" },
+  { key:"progress",  label:"in progress",   tone:"waiting" },
+  { key:"done",      label:"done",          tone:"done" }
+];
+const statusLabel = k => (STATUSES.find(s => s.key === k) || STATUSES[0]).label;
+const statusTone  = k => (STATUSES.find(s => s.key === k) || STATUSES[0]).tone;
+
+const BRAND = "biomaterials & REGENERATION DAYS";
+/* "REGENERATION DAY" not followed by an S is the recurring flyer error. */
+const brandSlip = s => /regeneration\s+day(?!s)\b/i.test(String(s || ""));
+
+/* =====================================================================
+   2. STATE
+   ===================================================================== */
+
+const uid = () => Math.random().toString(36).slice(2, 9);
+const todayISO = () => {
+  const d = new Date();
+  return [d.getFullYear(), String(d.getMonth() + 1).padStart(2, "0"),
+          String(d.getDate()).padStart(2, "0")].join("-");
+};
+
+/* Opens with plainly-marked example rows so the board shows what it does
+   on first look. Every one of them says "(example)" and the banner and
+   the report header both say so too — they are never presented as real
+   botiss figures. One row carries a "?" and two carry a €0/€0 target,
+   because those are the two cases with special handling. */
+function exampleState(){
+  const t = todayISO();
+  const plus = n => { const d = new Date(); d.setDate(d.getDate() + n);
+    return [d.getFullYear(), String(d.getMonth()+1).padStart(2,"0"),
+            String(d.getDate()).padStart(2,"0")].join("-"); };
+  return {
+    v: 1,
+    example: true,
+    asOf: t,
+    quarter: "Q3",
+    distributors: [
+      { id:uid(), country:"Austria",      name:"(example) Alpen Dental",        target:145000, booked:151200 },
+      { id:uid(), country:"Brazil",       name:"(example) Regenera LATAM",      target:210000, booked:132000 },
+      { id:uid(), country:"Egypt",        name:"(example) Nile Medical",        target:0,      booked:0      },
+      { id:uid(), country:"Italy",        name:"(example) Dental Distribuzione",target:180000, booked:96500  },
+      { id:uid(), country:"Poland",       name:"(example) Implantmed Polska",   target:98000,  booked:104300 },
+      { id:uid(), country:"Spain",        name:"(example) Ibérica Regen",       target:120000, booked:88400  },
+      { id:uid(), country:"South Korea",  name:"(example) Hanyang Bio",         target:0,      booked:0      },
+      { id:uid(), country:"Türkiye",      name:"(example) Anka Dental?",        target:76000,  booked:59900  }
+    ],
+    approvals: [
+      { id:uid(), ref:"(example) PO-4471 — Dental Distribuzione", received:plus(-3), note:"cerabone 1.0 cc ×40, awaiting ok to customer service", done:false },
+      { id:uid(), ref:"(example) PO-4482 — Ibérica Regen",        received:plus(-1), note:"maxgraft granules, price check requested", done:false }
+    ],
+    approvalsCheckedOn: null,
+    events: [
+      { id:uid(), name:"(example) BRD Milan", date:plus(22), speaker:"", partner:"",
+        status:{ travel:"done", samples:"progress", materials:"not_done", social:"no_update", certs:"no_update" } },
+      { id:uid(), name:"(example) biomaterials & REGENERATION DAY Warsaw", date:plus(49), speaker:"", partner:"",
+        status:{ travel:"no_update", samples:"no_update", materials:"no_update", social:"no_update", certs:"no_update" } }
+    ],
+    updatedAt: new Date().toISOString()
+  };
+}
+
+let S = loadLocal() || exampleState();
+let dbRef = null;              // db document reference once available
+let storeMode = "local";       // "local" | "shared"
+let tab = "targets";
+let editRows = false;
+let mapper = null;             // pending import awaiting column mapping
+
+const LS_KEY = "botiss-daily-desk-v1";
+function loadLocal(){
+  try { const raw = localStorage.getItem(LS_KEY); return raw ? JSON.parse(raw) : null; }
+  catch(e){ return null; }
+}
+function saveLocal(){
+  try { localStorage.setItem(LS_KEY, JSON.stringify(S)); } catch(e){}
+}
+
+let saveTimer = null;
+function commit(){
+  S.updatedAt = new Date().toISOString();
+  saveLocal();
+  render();
+  if (!dbRef) return;
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(() => {
+    dbRef.set(JSON.parse(JSON.stringify(S))).catch(err => {
+      const code = err && err.code;
+      if (code === "revoked" || code === "not_granted") {
+        dbRef = null; storeMode = "local"; renderStorePill();
+        toast("Shared store is no longer available — saving on this device only.");
+      } else if (code === "quota_exceeded") {
+        toast("The shared store is full. Clear old entries and try again.");
+      } else {
+        toast("Could not save to the shared store. Kept on this device.");
+      }
+    });
+  }, 350);
+}
+
+/* =====================================================================
+   3. DERIVED NUMBERS
+   ===================================================================== */
+
+const num = v => { const n = Number(v); return Number.isFinite(n) ? n : 0; };
+const eur = n => "€" + Math.round(n).toLocaleString("en-US");
+const pct = (part, whole) => whole > 0 ? Math.round(Math.abs(part) / whole * 100) : 0;
+
+function isDormant(d){ return num(d.target) === 0 && num(d.booked) === 0; }
+
+function paced(){
+  return S.distributors.map(d => {
+    const target = num(d.target), booked = num(d.booked);
+    const gap = target - booked;              // + = behind pace
+    return {
+      ...d, target, booked, gap,
+      surplus: -gap,                          // + = ahead, for the chart
+      pct: pct(gap, target),
+      dormant: isDormant(d),
+      unconfirmed: String(d.name || "").includes("?")
+    };
+  });
+}
+const byCountry = (a, b) =>
+  String(a.country||"").localeCompare(String(b.country||""), "en", { sensitivity:"base" }) ||
+  String(a.name||"").localeCompare(String(b.name||""), "en", { sensitivity:"base" });
+
+function activeRows(){ return paced().filter(d => !d.dormant).sort(byCountry); }
+function dormantRows(){ return paced().filter(d => d.dormant).sort(byCountry); }
+function attentionRows(){ return paced().filter(d => !d.dormant && d.gap > 0).sort((a,b) => b.gap - a.gap); }
+
+function openApprovals(){
+  return S.approvals.filter(a => !a.done)
+    .map(a => ({ ...a, days: daysBetween(a.received, todayISO()) }))
+    .sort((a, b) => b.days - a.days);
+}
+function daysBetween(fromISO, toISO){
+  const a = Date.parse(fromISO + "T00:00:00"), b = Date.parse(toISO + "T00:00:00");
+  if (!Number.isFinite(a) || !Number.isFinite(b)) return 0;
+  return Math.max(0, Math.round((b - a) / 86400000));
+}
+function daysAway(iso){
+  const a = Date.parse(todayISO() + "T00:00:00"), b = Date.parse(iso + "T00:00:00");
+  if (!Number.isFinite(b)) return null;
+  return Math.round((b - a) / 86400000);
+}
+function sortedEvents(){
+  return S.events.slice().sort((a, b) => String(a.date||"").localeCompare(String(b.date||"")));
+}
+function eventOpenCount(){
+  let n = 0;
+  S.events.forEach(e => READY_ITEMS.forEach(it => {
+    const st = (e.status || {})[it.key] || "no_update";
+    if (st !== "done") n++;
+  }));
+  return n;
+}
+
+const fmtDate = iso => {
+  const t = Date.parse(iso + "T00:00:00");
+  if (!Number.isFinite(t)) return iso || "—";
+  return new Date(t).toLocaleDateString("en-GB", { day:"numeric", month:"long", year:"numeric" });
+};
+const fmtDateShort = iso => {
+  const t = Date.parse(iso + "T00:00:00");
+  if (!Number.isFinite(t)) return iso || "—";
+  return new Date(t).toLocaleDateString("en-GB", { day:"numeric", month:"short", year:"numeric" });
+};
+
+/* =====================================================================
+   4. THE REPORT — the fixed shape, generated from the same numbers the
+      board shows. This is the thing that gets sent.
+   ===================================================================== */
+
+function buildReport(){
+  const L = [];
+  const stamp = S.example ? "DAILY STATUS — " + fmtDate(todayISO()) + "   [EXAMPLE DATA — NOT REAL FIGURES]"
+                          : "DAILY STATUS — " + fmtDate(todayISO());
+  L.push(stamp, "");
+
+  const act = activeRows(), dor = dormantRows();
+  L.push("DISTRIBUTOR TARGETS (" + (S.quarter || "Q3") + " pace) — sorted by country, A→Z");
+  if (!act.length) {
+    L.push("- no distributor export loaded yet");
+  } else {
+    act.forEach(d => {
+      const dir = d.gap > 0 ? "BEHIND" : d.gap < 0 ? "AHEAD" : "ON PACE";
+      const tail = d.gap === 0 ? "on pace"
+        : eur(Math.abs(d.gap)) + " " + dir + " (" + d.pct + "%)";
+      L.push("- " + d.country + " — " + d.name +
+             "  " + (S.quarter || "Q3") + " target: " + eur(d.target) +
+             " | booked: " + eur(d.booked) + " | " + tail);
+    });
+  }
+  L.push("");
+
+  L.push("NEEDS ATTENTION (largest shortfalls vs. " + (S.quarter || "Q3") + " pace)");
+  const att = attentionRows();
+  if (!att.length) L.push("- none behind pace");
+  else att.forEach(d => L.push("- " + d.country + " — " + d.name + ": " +
+                               eur(d.gap) + " behind (" + d.pct + "%)"));
+  L.push("");
+
+  L.push("NO ACTIVE TARGET THIS YEAR");
+  if (!dor.length) L.push("- none");
+  else dor.forEach(d => L.push("- " + d.country + " — " + d.name));
+  L.push("");
+
+  L.push("PENDING ORDER APPROVALS");
+  const open = openApprovals();
+  const reviewed = S.approvalsCheckedOn === todayISO();
+  if (!open.length) {
+    L.push(reviewed ? "- none open — today's email input reviewed"
+                    : "(needs today's email input — no data given yet)");
+  } else {
+    open.forEach(a => L.push("- " + a.ref + " — waiting " + a.days +
+                             (a.days === 1 ? " day" : " days") +
+                             (a.note ? " · " + a.note : "")));
+    if (!reviewed) L.push("(today's email input not given yet — this list may be incomplete)");
+  }
+  L.push("");
+
+  L.push("EVENT READINESS — sorted by date, soonest first");
+  const evs = sortedEvents();
+  if (!evs.length) {
+    L.push("- no events entered");
+  } else {
+    evs.forEach((e, i) => {
+      const away = daysAway(e.date);
+      const awayTxt = away === null ? "date not set"
+        : away === 0 ? "today"
+        : away > 0 ? away + (away === 1 ? " day away" : " days away")
+        : Math.abs(away) + (Math.abs(away) === 1 ? " day ago" : " days ago");
+      L.push(e.name + " — " + fmtDate(e.date) + " (" + awayTxt + ") — Speaker: " +
+             (e.speaker ? e.speaker : "no update yet"));
+      READY_ITEMS.forEach(it =>
+        L.push("- " + it.name + ": " + statusLabel((e.status || {})[it.key] || "no_update")));
+      if (brandSlip(e.name)) L.push("  ! event brand reads “DAY” — must read “" + BRAND + "”");
+      if (i < evs.length - 1) L.push("");
+    });
+  }
+  return L.join("\n");
+}
+
+/* =====================================================================
+   5. RENDER
+   ===================================================================== */
+
+const esc = s => String(s == null ? "" : s)
+  .replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;")
+  .replace(/"/g,"&quot;").replace(/'/g,"&#39;");
+
+const ICON = {
+  warn:'<svg viewBox="0 0 24 24"><path d="M12 9v4m0 3h.01M10.3 4.3 2.6 18a2 2 0 0 0 1.7 3h15.4a2 2 0 0 0 1.7-3L13.7 4.3a2 2 0 0 0-3.4 0Z"/></svg>',
+  info:'<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 11v5m0-8h.01"/></svg>',
+  copy:'<svg viewBox="0 0 24 24"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg>',
+  down:'<svg viewBox="0 0 24 24"><path d="M12 4v11m0 0 4-4m-4 4-4-4M4 20h16"/></svg>',
+  plus:'<svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>',
+  check:'<svg viewBox="0 0 24 24"><path d="M4 12.5 9 17.5 20 6.5"/></svg>',
+  trash:'<svg viewBox="0 0 24 24"><path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13"/></svg>',
+  up:'<svg viewBox="0 0 24 24"><path d="M12 20V9m0 0 4 4m-4-4-8 4M12 9 4 13"/></svg>'
+};
+
+const TABS = [
+  { key:"targets",   label:"Targets" },
+  { key:"approvals", label:"Approvals" },
+  { key:"events",    label:"Events" },
+  { key:"report",    label:"Report" }
+];
+
+function renderTabs(){
+  const att = attentionRows().length;
+  const open = openApprovals().length;
+  const evOpen = eventOpenCount();
+  const counts = { targets:[att,"hot"], approvals:[open,"warm"], events:[evOpen,"warm"], report:[null,""] };
+  document.getElementById("tabs").innerHTML = TABS.map(t => {
+    const [n, tone] = counts[t.key];
+    const badge = n ? '<span class="count ' + tone + '">' + n + "</span>" : "";
+    return '<button class="tab" role="tab" id="tab-' + t.key + '" data-tab="' + t.key +
+      '" aria-selected="' + (tab === t.key) + '">' + t.label + badge + "</button>";
+  }).join("");
+}
+
+function renderStorePill(){
+  const el = document.getElementById("storePill");
+  if (storeMode === "shared") {
+    el.className = "pill shared";
+    el.innerHTML = '<span class="led"></span>Shared — everyone with the link sees this';
+  } else {
+    el.className = "pill local";
+    el.innerHTML = '<span class="led"></span>This device only';
+  }
+}
+
+function exampleBanner(){
+  if (!S.example) return "";
+  return '<div class="notice">' + ICON.warn + '<div class="nbody">' +
+    '<strong>Example rows, not your figures.</strong> Every distributor, order and event below is marked “(example)” ' +
+    'so nothing here can be mistaken for real botiss data. Load your export on the Targets tab, then clear these.' +
+    '<div><button class="btn sm" id="clearExample">Clear example data</button></div>' +
+    "</div></div>";
+}
+
+function render(){
+  renderTabs();
+  const v = document.getElementById("view");
+  document.getElementById("todayStamp").textContent =
+    fmtDateShort(todayISO()) + " · " + (S.quarter || "Q3");
+  if (tab === "targets")   v.innerHTML = viewTargets();
+  if (tab === "approvals") v.innerHTML = viewApprovals();
+  if (tab === "events")    v.innerHTML = viewEvents();
+  if (tab === "report")    v.innerHTML = viewReport();
+  if (tab === "targets")   wirePaceTips();
+}
+
+/* ---------- Targets ---------- */
+
+function viewTargets(){
+  const act = activeRows(), dor = dormantRows(), att = attentionRows();
+  const totTarget = act.reduce((s, d) => s + d.target, 0);
+  const totBooked = act.reduce((s, d) => s + d.booked, 0);
+  const net = totTarget - totBooked;
+
+  const figs =
+    '<div class="figs">' +
+      '<div class="fig"><div class="v num">' + eur(totTarget) + '</div>' +
+        '<div class="k">' + esc(S.quarter || "Q3") + ' target, active distributors</div>' +
+        '<div class="s">' + act.length + ' with a target this year</div></div>' +
+      '<div class="fig"><div class="v num">' + eur(totBooked) + '</div>' +
+        '<div class="k">Booked year to date</div>' +
+        '<div class="s">export dated ' + esc(fmtDateShort(S.asOf)) + '</div></div>' +
+      '<div class="fig ' + (net > 0 ? "behind" : net < 0 ? "ahead" : "") + '">' +
+        '<div class="v num">' + (net === 0 ? "level" : eur(Math.abs(net))) + '</div>' +
+        '<div class="k">' + (net > 0 ? "Behind pace, net" : net < 0 ? "Ahead of pace, net" : "On pace") + '</div>' +
+        '<div class="s">' + (totTarget ? pct(net, totTarget) + "% of target" : "no target loaded") + '</div></div>' +
+      '<div class="fig ' + (att.length ? "behind" : "ahead") + '">' +
+        '<div class="v num">' + att.length + ' of ' + act.length + '</div>' +
+        '<div class="k">Behind ' + esc(S.quarter || "Q3") + ' pace</div>' +
+        '<div class="s">' + (dor.length ? dor.length + " with no active target" : "all have a target") + '</div></div>' +
+    "</div>";
+
+  return '<div class="stack">' +
+    exampleBanner() +
+    figs +
+    paceChart(act) +
+    attentionList(att) +
+    targetTable(act, dor) +
+    importPanel() +
+  "</div>";
+}
+
+function paceChart(rows){
+  if (!rows.length) return "";
+  const sorted = rows.slice().sort((a, b) => a.surplus - b.surplus);  // worst first
+  const maxAbs = Math.max(...sorted.map(d => Math.abs(d.surplus)), 1);
+  const bars = sorted.map(d => {
+    const w = Math.abs(d.surplus) / maxAbs * 50;
+    const side = d.surplus < 0 ? "behind" : "ahead";
+    const bar = d.surplus === 0 ? "" :
+      '<div class="bar ' + side + '" style="width:' + w.toFixed(2) + '%"></div>';
+    const amt = d.surplus === 0 ? "on pace"
+      : (d.surplus < 0 ? "−" : "+") + eur(Math.abs(d.surplus));
+    return '<div class="pacerow" data-tip="' + esc(
+        d.country + " — " + d.name + "|" +
+        (S.quarter||"Q3") + " target " + eur(d.target) + " · booked " + eur(d.booked) + "|" +
+        (d.gap > 0 ? eur(d.gap) + " behind (" + d.pct + "%)"
+         : d.gap < 0 ? eur(-d.gap) + " ahead (" + d.pct + "%)" : "level with target")
+      ) + '">' +
+      '<div class="who"><b>' + esc(d.country) + '</b> — ' + esc(d.name) + "</div>" +
+      '<div class="chartwrap-cell"><div class="track"><div class="zero"></div>' + bar + "</div></div>" +
+      '<div class="amt ' + (d.surplus < 0 ? "behind" : d.surplus > 0 ? "ahead" : "") + ' num">' + amt + "</div>" +
+    "</div>";
+  }).join("");
+
+  return '<section class="sect"><div class="sect-head">' +
+    "<h2>Pace against the " + esc(S.quarter || "Q3") + " target</h2>" +
+    '<span class="hint">Booked minus target · worst at the top</span></div>' +
+    '<div class="legend">' +
+      '<span><i style="background:var(--behind)"></i>Behind pace</span>' +
+      '<span><i style="background:var(--ahead)"></i>Ahead of pace</span>' +
+      '<span><i style="background:var(--rule)"></i>Target</span></div>' +
+    '<div class="chartwrap"><div class="pace">' + bars + "</div>" +
+      '<div class="axis"><div class="scaleline"></div><div class="scale">' +
+        "<span>−" + eur(maxAbs) + "</span><span>0</span><span>+" + eur(maxAbs) + "</span>" +
+      "</div></div>" +
+      '<div class="tip" id="paceTip"></div>' +
+    "</div></section>";
+}
+
+function wirePaceTips(){
+  const tip = document.getElementById("paceTip");
+  if (!tip) return;
+  const wrap = tip.parentElement;
+  wrap.querySelectorAll(".pacerow").forEach(row => {
+    row.addEventListener("pointerenter", () => {
+      const parts = (row.dataset.tip || "").split("|");
+      tip.innerHTML = "<b>" + esc(parts[0]) + "</b><br><span class='num'>" +
+        esc(parts[1]) + "</span><br>" + esc(parts[2]);
+      const rr = row.getBoundingClientRect(), wr = wrap.getBoundingClientRect();
+      tip.style.left = Math.round(rr.left - wr.left + rr.width / 2) + "px";
+      tip.style.top  = Math.round(rr.top - wr.top) + "px";
+      tip.style.opacity = "1";
+    });
+    row.addEventListener("pointerleave", () => { tip.style.opacity = "0"; });
+  });
+}
+
+function attentionList(att){
+  if (!att.length) {
+    return '<section class="sect"><div class="sect-head"><h2>Needs attention</h2></div>' +
+      '<div class="empty">Nobody is behind ' + esc(S.quarter || "Q3") + ' pace.</div></section>';
+  }
+  return '<section class="sect"><div class="sect-head">' +
+    "<h2>Needs attention</h2>" +
+    '<span class="hint">Behind-pace only, ranked by euro shortfall</span></div>' +
+    '<div class="rows">' + att.map(d =>
+      '<div class="row attention"><div class="rail"></div><div class="rbody">' +
+        '<div class="rtitle">' + esc(d.country) + " — " + esc(d.name) + "</div>" +
+        '<div class="rmeta">target ' + eur(d.target) + " · booked " + eur(d.booked) +
+          (d.unconfirmed ? " · name unconfirmed in the export, carried over as written" : "") + "</div>" +
+      "</div>" +
+      '<div class="ract"><span class="chip behind">' + eur(d.gap) + " behind · " + d.pct + "%</span></div>" +
+      "</div>").join("") +
+    "</div></section>";
+}
+
+function targetTable(act, dor){
+  const head = '<tr><th>Country</th><th>Distributor</th><th class="r">' +
+    esc(S.quarter || "Q3") + ' target</th><th class="r">Booked</th><th class="r">Pace</th><th></th></tr>';
+
+  const rowFor = d => {
+    if (editRows) {
+      return "<tr><td>" +
+        '<input aria-label="Country" data-edit="country" data-id="' + d.id + '" value="' + esc(d.country) + '"></td>' +
+        '<td><input aria-label="Distributor" data-edit="name" data-id="' + d.id + '" value="' + esc(d.name) + '"></td>' +
+        '<td class="r"><input class="money" aria-label="Target" data-edit="target" data-id="' + d.id + '" value="' + d.target + '"></td>' +
+        '<td class="r"><input class="money" aria-label="Booked" data-edit="booked" data-id="' + d.id + '" value="' + d.booked + '"></td>' +
+        '<td class="r n">—</td>' +
+        '<td class="r"><button class="btn quiet" data-del-dist="' + d.id + '" title="Remove ' + esc(d.name) + '" aria-label="Remove ' + esc(d.name) + '">' + ICON.trash + "</button></td></tr>";
+    }
+    const chip = d.dormant ? '<span class="chip idle">no active target</span>'
+      : d.gap > 0 ? '<span class="chip behind">' + eur(d.gap) + " behind · " + d.pct + "%</span>"
+      : d.gap < 0 ? '<span class="chip ahead">' + eur(-d.gap) + " ahead · " + d.pct + "%</span>"
+      : '<span class="chip">on pace</span>';
+    return "<tr" + (d.gap > 0 && !d.dormant ? ' class="attention"' : "") + ">" +
+      "<td>" + esc(d.country) + "</td>" +
+      "<td>" + esc(d.name) +
+        (d.unconfirmed ? ' <span class="chip idle" title="Name carries a “?” in the source sheet and is carried over exactly">unconfirmed</span>' : "") +
+      "</td>" +
+      '<td class="r n">' + eur(d.target) + "</td>" +
+      '<td class="r n">' + eur(d.booked) + "</td>" +
+      '<td class="r">' + chip + "</td><td></td></tr>";
+  };
+
+  const body = !act.length && !dor.length
+    ? '<tr><td colspan="6"><div class="empty">No distributors yet. Load the export below, or add rows by hand.</div></td></tr>'
+    : (act.length ? act.map(rowFor).join("") : "") +
+      (dor.length
+        ? '<tr><td colspan="6"><div class="grouphead">No active target this year</div></td></tr>' +
+          dor.map(rowFor).join("")
+        : "");
+
+  return '<section class="sect"><div class="sect-head">' +
+    "<h2>All distributors</h2>" +
+    '<span class="hint">Alphabetical by country. Dormant rows always sit at the bottom.</span></div>' +
+    '<div class="scroller"><table><thead>' + head + "</thead><tbody>" + body + "</tbody></table></div>" +
+    '<div class="btnrow" style="margin-top:12px">' +
+      '<button class="btn sm" id="toggleEdit">' + (editRows ? "Done editing" : "Edit rows") + "</button>" +
+      '<button class="btn sm" id="addDist">' + ICON.plus + "Add distributor</button>" +
+    "</div></section>";
+}
+
+function importPanel(){
+  if (mapper) return mapperPanel();
+  const xlsxReady = typeof XLSX !== "undefined";
+  return '<section class="sect"><div class="sect-head">' +
+    "<h2>Load the distributor export</h2>" +
+    '<span class="hint">Replaces every row</span></div>' +
+    '<p style="font-size:12.5px;color:var(--ink-3);max-width:62ch">' +
+      "Pick the sheet's country, distributor, " + esc(S.quarter || "Q3") +
+      " target and year-to-date booked columns on the next step. The booked column is the " +
+      "year total — whatever monthly cells are filled in, current month included." + "</p>" +
+    '<div class="formgrid wide" style="margin-top:12px">' +
+      (xlsxReady
+        ? '<div><label class="fld" for="xlsFile">Excel or CSV export</label>' +
+          '<input type="file" id="xlsFile" accept=".xlsx,.xlsm,.xls,.csv"></div>'
+        : '<div><label class="fld">Excel export</label>' +
+          '<div style="font-size:12px;color:var(--ink-3)">The spreadsheet reader did not load here. Paste the cells instead.</div></div>') +
+      '<div><label class="fld" for="pasteBox">…or paste cells straight from Excel</label>' +
+        '<textarea id="pasteBox" placeholder="Country	Distributor	Q3 target	2026"></textarea>' +
+        '<div class="btnrow" style="margin-top:8px"><button class="btn sm" id="pasteGo">' + ICON.up + "Read pasted cells</button></div></div>" +
+    "</div>" +
+    '<div><label class="fld" for="asOfIn" style="margin-top:12px">Export dated</label>' +
+      '<input type="date" id="asOfIn" value="' + esc(S.asOf || todayISO()) + '" style="max-width:220px"></div>' +
+    "</section>";
+}
+
+function mapperPanel(){
+  const opts = i => mapper.headers.map((h, j) =>
+    '<option value="' + j + '"' + (i === j ? " selected" : "") + ">" +
+    esc(h || ("column " + (j + 1))) + "</option>").join("");
+  return '<section class="sect"><div class="sect-head">' +
+    "<h2>Which column is which?</h2>" +
+    '<span class="hint">' + mapper.rows.length + " data rows found</span></div>" +
+    '<div class="formgrid wide">' +
+      '<div><label class="fld" for="mapCountry">Country</label><select id="mapCountry">' + opts(mapper.guess.country) + "</select></div>" +
+      '<div><label class="fld" for="mapName">Distributor</label><select id="mapName">' + opts(mapper.guess.name) + "</select></div>" +
+      '<div><label class="fld" for="mapTarget">' + esc(S.quarter || "Q3") + ' target</label><select id="mapTarget">' + opts(mapper.guess.target) + "</select></div>" +
+      '<div><label class="fld" for="mapBooked">Booked year to date</label><select id="mapBooked">' + opts(mapper.guess.booked) + "</select></div>" +
+    "</div>" +
+    '<div class="notice info" style="margin-top:12px">' + ICON.info +
+      '<div class="nbody">Names carrying a “?” come across exactly as written — the board never resolves an ' +
+      'uncertain name by guessing. Rows with a €0 target and €0 booked land in “no active target this year”.</div></div>' +
+    '<div class="btnrow" style="margin-top:12px">' +
+      '<button class="btn primary" id="mapGo">' + ICON.check + "Import " + mapper.rows.length + " rows</button>" +
+      '<button class="btn" id="mapCancel">Cancel</button>' +
+    "</div></section>";
+}
+
+/* ---------- Approvals ---------- */
+
+function viewApprovals(){
+  const open = openApprovals();
+  const closed = S.approvals.filter(a => a.done);
+  const reviewed = S.approvalsCheckedOn === todayISO();
+
+  const state = reviewed
+    ? '<div class="notice info">' + ICON.check + '<div class="nbody"><strong>Today\'s email input is in.</strong> ' +
+      "The list below is what is genuinely still waiting on your ok.</div></div>"
+    : '<div class="notice">' + ICON.warn + '<div class="nbody"><strong>Today\'s email input has not been given yet.</strong> ' +
+      "Until you mark the inbox reviewed, the report says so out loud instead of implying this list is complete." +
+      '<div><button class="btn sm" id="markReviewed">' + ICON.check + "Inbox reviewed for today</button></div></div></div>";
+
+  const list = open.length
+    ? '<div class="rows">' + open.map(a =>
+        '<div class="row ' + (a.days >= 3 ? "attention" : "waiting-rail") + '">' +
+        '<div class="rail"></div><div class="rbody">' +
+          '<div class="rtitle">' + esc(a.ref) + "</div>" +
+          '<div class="rmeta">arrived ' + esc(fmtDateShort(a.received)) +
+            (a.note ? " · " + esc(a.note) : "") + "</div>" +
+        "</div>" +
+        '<div class="ract chiprow">' +
+          '<span class="chip ' + (a.days >= 3 ? "behind" : "waiting") + '">waiting ' + a.days +
+            (a.days === 1 ? " day" : " days") + "</span>" +
+          '<button class="btn sm" data-ok="' + a.id + '">' + ICON.check + "Ok sent</button>" +
+          '<button class="btn quiet" data-del-appr="' + a.id + '" aria-label="Remove ' + esc(a.ref) + '">' + ICON.trash + "</button>" +
+        "</div></div>").join("") + "</div>"
+    : '<div class="empty">Nothing waiting on an ok.</div>';
+
+  const add = '<section class="sect"><div class="sect-head"><h2>Log an order that arrived by email</h2></div>' +
+    '<div class="formgrid wide">' +
+      '<div><label class="fld" for="apprRef">Order reference and customer</label>' +
+        '<input id="apprRef" placeholder="PO-4491 — Alpen Dental"></div>' +
+      '<div><label class="fld" for="apprDate">Arrived on</label>' +
+        '<input type="date" id="apprDate" value="' + todayISO() + '"></div>' +
+      '<div style="grid-column:1/-1"><label class="fld" for="apprNote">What it needs</label>' +
+        '<input id="apprNote" placeholder="cerabone 1.0 cc ×40 — ok to customer service"></div>' +
+    "</div>" +
+    '<div class="btnrow" style="margin-top:11px"><button class="btn primary" id="apprAdd">' + ICON.plus + "Add to the waiting list</button></div>" +
+    "</section>";
+
+  const cleared = closed.length
+    ? '<section class="sect"><div class="sect-head"><h2>Ok sent</h2>' +
+      '<span class="hint">' + closed.length + " today and earlier</span></div>" +
+      '<div class="rows">' + closed.slice(-8).reverse().map(a =>
+        '<div class="row"><div class="rail"></div><div class="rbody">' +
+          '<div class="rtitle" style="font-weight:500;color:var(--ink-2)">' + esc(a.ref) + "</div>" +
+          '<div class="rmeta">ok sent ' + esc(fmtDateShort(a.doneOn || todayISO())) + "</div></div>" +
+        '<div class="ract"><button class="btn quiet" data-reopen="' + a.id + '">Reopen</button></div></div>').join("") +
+      "</div></section>"
+    : "";
+
+  return '<div class="stack">' + exampleBanner() + state +
+    '<section class="sect"><div class="sect-head"><h2>Waiting on your ok to customer service</h2>' +
+      '<span class="hint">Longest wait first</span></div>' + list + "</section>" +
+    add + cleared + "</div>";
+}
+
+/* ---------- Events ---------- */
+
+function viewEvents(){
+  const evs = sortedEvents();
+  const blocks = evs.length ? evs.map(e => {
+    const away = daysAway(e.date);
+    const soon = away !== null && away >= 0 && away <= 21;
+    const awayTxt = away === null ? "date not set"
+      : away === 0 ? "today"
+      : away > 0 ? away + (away === 1 ? " day away" : " days away")
+      : Math.abs(away) + (Math.abs(away) === 1 ? " day ago" : " days ago");
+    const open = READY_ITEMS.filter(it => ((e.status || {})[it.key] || "no_update") !== "done").length;
+
+    const slip = brandSlip(e.name)
+      ? '<div class="notice bad" style="margin:0 15px 13px">' + ICON.warn +
+        '<div class="nbody"><strong>The event brand reads “DAY”.</strong> It must read “' + esc(BRAND) + '”.' +
+        '<div><button class="btn sm" data-fixbrand="' + e.id + '">Fix to “DAYS”</button></div></div></div>'
+      : "";
+
+    const items = READY_ITEMS.map(it => {
+      const st = (e.status || {})[it.key] || "no_update";
+      return '<div class="item"><div><div class="nm">' + esc(it.name) + "</div>" +
+        '<div class="note">' + esc(it.note) + "</div></div>" +
+        '<div class="selwrap"><label class="fld" for="st-' + e.id + "-" + it.key + '" style="display:none">' +
+          esc(it.name) + "</label>" +
+        '<select id="st-' + e.id + "-" + it.key + '" data-ev="' + e.id + '" data-item="' + it.key + '">' +
+        STATUSES.map(s => '<option value="' + s.key + '"' + (s.key === st ? " selected" : "") + ">" +
+          s.label + "</option>").join("") + "</select></div></div>";
+    }).join("");
+
+    return '<section class="ev' + (soon ? " soon" : "") + '"><header>' +
+      "<h3>" + esc(e.name) + "</h3>" +
+      '<span class="when">' + esc(fmtDateShort(e.date)) + " · " + esc(awayTxt) + "</span>" +
+      '<span class="chip ' + (open === 0 ? "done" : open >= 4 ? "behind" : "waiting") + '">' +
+        (open === 0 ? "all five ready" : open + " of 5 open") + "</span>" +
+      '<div class="speaker">Speaker: ' + (e.speaker ? esc(e.speaker) : "no update yet") +
+        (e.partner ? " · Partner: " + esc(e.partner) : "") + "</div>" +
+      "</header>" + slip +
+      '<div class="ready">' + items + "</div>" +
+      "<footer>" +
+        '<div style="flex:1 1 150px;min-width:0"><label class="fld" for="ev-name-' + e.id + '">Event name</label>' +
+          '<input id="ev-name-' + e.id + '" data-evfield="name" data-ev="' + e.id + '" value="' + esc(e.name) + '"></div>' +
+        '<div style="flex:0 1 150px"><label class="fld" for="ev-date-' + e.id + '">Date</label>' +
+          '<input type="date" id="ev-date-' + e.id + '" data-evfield="date" data-ev="' + e.id + '" value="' + esc(e.date) + '"></div>' +
+        '<div style="flex:1 1 150px;min-width:0"><label class="fld" for="ev-sp-' + e.id + '">Speaker / KOL</label>' +
+          '<input id="ev-sp-' + e.id + '" data-evfield="speaker" data-ev="' + e.id + '" value="' + esc(e.speaker || "") + '" placeholder="leave empty for “no update yet”"></div>' +
+        '<div style="flex:1 1 150px;min-width:0"><label class="fld" for="ev-pa-' + e.id + '">Partner / distributor</label>' +
+          '<input id="ev-pa-' + e.id + '" data-evfield="partner" data-ev="' + e.id + '" value="' + esc(e.partner || "") + '"></div>' +
+        '<button class="btn quiet" data-del-ev="' + e.id + '" aria-label="Remove ' + esc(e.name) + '">' + ICON.trash + "Remove</button>" +
+      "</footer></section>";
+  }).join("") : '<div class="sect"><div class="empty">No events yet. Add the next BRD below.</div></div>';
+
+  const add = '<section class="sect"><div class="sect-head"><h2>Add an event</h2>' +
+    '<span class="hint">All five readiness lines start at “no update yet”</span></div>' +
+    '<div class="formgrid wide">' +
+      '<div style="grid-column:1/-1"><label class="fld" for="evName">Event name</label>' +
+        '<input id="evName" placeholder="' + esc(BRAND) + ' Vienna"></div>' +
+      '<div><label class="fld" for="evDate">Date</label><input type="date" id="evDate" value="' + todayISO() + '"></div>' +
+      '<div><label class="fld" for="evSpeaker">Speaker / KOL</label><input id="evSpeaker" placeholder="optional"></div>' +
+      '<div><label class="fld" for="evPartner">Partner / distributor</label><input id="evPartner" placeholder="optional"></div>' +
+    "</div>" +
+    '<div class="btnrow" style="margin-top:11px"><button class="btn primary" id="evAdd">' + ICON.plus + "Add event</button></div>" +
+    "</section>";
+
+  return '<div class="stack">' + exampleBanner() + blocks + add + "</div>";
+}
+
+/* ---------- Report ---------- */
+
+function viewReport(){
+  const txt = buildReport();
+  return '<div class="stack">' +
+    (S.example
+      ? '<div class="notice">' + ICON.warn + '<div class="nbody"><strong>This report is built from example rows.</strong> ' +
+        'Its header says so too, so it cannot be sent by accident as real figures.</div></div>'
+      : "") +
+    '<section class="sect plain"><div class="sect-head">' +
+      '<div><div class="eyebrow">Daily check-in</div><h2 style="font-size:19px;margin-top:4px">One page, same shape every day</h2></div>' +
+      '<span class="hint">Generated from the board — nothing typed twice</span></div>' +
+      '<div class="btnrow" style="margin-bottom:12px">' +
+        '<button class="btn primary" id="copyReport">' + ICON.copy + "Copy report</button>" +
+        '<button class="btn" id="dlReport">' + ICON.down + "Download as text</button>" +
+      "</div>" +
+      '<pre class="report" id="reportBody">' + esc(txt) + "</pre>" +
+    "</section>" +
+    '<p class="foot">Sections never drop out, even when empty: an unreported readiness item reads “no update yet”, ' +
+    "and a day without email input says so rather than implying the approvals list is complete.</p>" +
+  "</div>";
+}
+
+/* =====================================================================
+   6. IMPORT
+   ===================================================================== */
+
+/* Handles both "1.234,56" and "1,234.56", plus € signs and spaces. */
+function parseMoney(v){
+  if (typeof v === "number") return Number.isFinite(v) ? v : 0;
+  let s = String(v == null ? "" : v).replace(/[€$\s ]/g, "").trim();
+  if (!s || /^[-–—]$/.test(s)) return 0;
+  const neg = /^\(.*\)$/.test(s);
+  s = s.replace(/[()]/g, "");
+  const lastComma = s.lastIndexOf(","), lastDot = s.lastIndexOf(".");
+  if (lastComma > -1 && lastDot > -1) {
+    if (lastComma > lastDot) s = s.replace(/\./g, "").replace(",", ".");
+    else s = s.replace(/,/g, "");
+  } else if (lastComma > -1) {
+    s = (s.length - lastComma - 1) === 3 ? s.replace(/,/g, "") : s.replace(",", ".");
+  } else if (lastDot > -1) {
+    if ((s.length - lastDot - 1) === 3 && /^\d{1,3}(\.\d{3})+$/.test(s)) s = s.replace(/\./g, "");
+  }
+  const n = parseFloat(s.replace(/[^0-9.\-]/g, ""));
+  if (!Number.isFinite(n)) return 0;
+  return neg ? -n : n;
+}
+
+function guessColumns(headers){
+  const find = (...pats) => {
+    for (const p of pats) {
+      const i = headers.findIndex(h => p.test(String(h || "")));
+      if (i > -1) return i;
+    }
+    return -1;
+  };
+  const year = new Date().getFullYear();
+  const country = find(/^\s*(country|land|region)\s*$/i, /countr|land/i);
+  const name    = find(/distrib|partner|customer|kunde|company|firma|name/i);
+  const target  = find(new RegExp("q[1-4].*(target|ziel)", "i"), /target|ziel|plan|budget/i);
+  const booked  = find(new RegExp("^\\s*" + year + "\\s*$"), new RegExp(String(year)),
+                       /booked|actual|ytd|revenue|umsatz|total|ist/i);
+  const fallback = (i, alt) => i > -1 ? i : Math.min(alt, Math.max(headers.length - 1, 0));
+  return {
+    country: fallback(country, 0),
+    name:    fallback(name, 1),
+    target:  fallback(target, 2),
+    booked:  fallback(booked, 3)
+  };
+}
+
+/* The header row is the one, in the first ten, with the most non-empty
+   text cells — export sheets often open with a title and a blank line. */
+function openMapper(matrix){
+  const rows = matrix.filter(r => Array.isArray(r) && r.some(c => String(c == null ? "" : c).trim() !== ""));
+  if (rows.length < 2) { toast("Could not find any rows in that. Check the sheet and try again."); return; }
+  let hi = 0, best = -1;
+  rows.slice(0, 10).forEach((r, i) => {
+    const score = r.filter(c => typeof c === "string" && c.trim() !== "").length;
+    if (score > best) { best = score; hi = i; }
+  });
+  const headers = rows[hi].map(h => String(h == null ? "" : h).trim());
+  const width = Math.max(headers.length, ...rows.map(r => r.length));
+  while (headers.length < width) headers.push("column " + (headers.length + 1));
+  mapper = { headers, rows: rows.slice(hi + 1), guess: guessColumns(headers) };
+  render();
+}
+
+function applyMapper(){
+  const pick = id => parseInt(document.getElementById(id).value, 10) || 0;
+  const c = pick("mapCountry"), n = pick("mapName"), t = pick("mapTarget"), b = pick("mapBooked");
+  const out = [];
+  mapper.rows.forEach(r => {
+    const country = String(r[c] == null ? "" : r[c]).trim();
+    const name    = String(r[n] == null ? "" : r[n]).trim();
+    if (!country && !name) return;
+    if (/^(total|sum|summe|gesamt)\b/i.test(country) || /^(total|sum|summe|gesamt)\b/i.test(name)) return;
+    out.push({ id:uid(), country, name, target:parseMoney(r[t]), booked:parseMoney(r[b]) });
+  });
+  if (!out.length) { toast("Those columns produced no rows. Try a different mapping."); return; }
+  S.distributors = out;
+  S.example = false;
+  mapper = null;
+  commit();
+  toast("Loaded " + out.length + " distributors from the export.");
+}
+
+/* =====================================================================
+   7. EVENTS & WIRING
+   ===================================================================== */
+
+let toastTimer = null;
+function toast(msg){
+  const el = document.getElementById("toast");
+  el.textContent = msg;
+  el.classList.add("on");
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => el.classList.remove("on"), 2600);
+}
+
+function findDist(id){ return S.distributors.find(d => d.id === id); }
+function findEvent(id){ return S.events.find(e => e.id === id); }
+
+document.addEventListener("click", ev => {
+  const t = ev.target.closest("button");
+  if (!t) return;
+
+  if (t.dataset.tab) { tab = t.dataset.tab; render(); window.scrollTo({ top:0 }); return; }
+
+  switch (t.id) {
+    case "clearExample": {
+      S = { ...exampleState(), example:false, distributors:[], approvals:[], events:[],
+            approvalsCheckedOn:null };
+      commit(); toast("Example rows cleared. The board is yours now."); return;
+    }
+    case "toggleEdit": editRows = !editRows; render(); return;
+    case "addDist":
+      S.distributors.push({ id:uid(), country:"", name:"", target:0, booked:0 });
+      editRows = true; commit(); return;
+    case "pasteGo": {
+      const raw = document.getElementById("pasteBox").value;
+      if (!raw.trim()) { toast("Paste the cells first, then read them."); return; }
+      const sep = raw.indexOf("\t") > -1 ? "\t" : (raw.indexOf(";") > -1 ? ";" : ",");
+      openMapper(raw.replace(/\r/g, "").split("\n").map(l => l.split(sep)));
+      return;
+    }
+    case "mapGo": applyMapper(); return;
+    case "mapCancel": mapper = null; render(); return;
+    case "markReviewed":
+      S.approvalsCheckedOn = todayISO(); commit();
+      toast("Today's email input marked as given."); return;
+    case "apprAdd": {
+      const ref = document.getElementById("apprRef").value.trim();
+      if (!ref) { toast("An order needs a reference before it can wait on anything."); return; }
+      S.approvals.push({ id:uid(), ref,
+        received: document.getElementById("apprDate").value || todayISO(),
+        note: document.getElementById("apprNote").value.trim(), done:false });
+      commit(); toast("Added to the waiting list."); return;
+    }
+    case "evAdd": {
+      const name = document.getElementById("evName").value.trim();
+      if (!name) { toast("Give the event a name first."); return; }
+      S.events.push({ id:uid(), name,
+        date: document.getElementById("evDate").value || todayISO(),
+        speaker: document.getElementById("evSpeaker").value.trim(),
+        partner: document.getElementById("evPartner").value.trim(),
+        status: { travel:"no_update", samples:"no_update", materials:"no_update",
+                  social:"no_update", certs:"no_update" } });
+      commit(); toast("Event added — all five items start at “no update yet”."); return;
+    }
+    case "copyReport": {
+      const txt = buildReport();
+      const done = () => toast("Report copied.");
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(txt).then(done, () => selectReport());
+      } else selectReport();
+      return;
+    }
+    case "dlReport": downloadReport(); return;
+  }
+
+  if (t.dataset.delDist) {
+    S.distributors = S.distributors.filter(d => d.id !== t.dataset.delDist); commit(); return;
+  }
+  if (t.dataset.ok) {
+    const a = S.approvals.find(x => x.id === t.dataset.ok);
+    if (a) { a.done = true; a.doneOn = todayISO(); commit(); toast("Marked ok sent to customer service."); }
+    return;
+  }
+  if (t.dataset.reopen) {
+    const a = S.approvals.find(x => x.id === t.dataset.reopen);
+    if (a) { a.done = false; delete a.doneOn; commit(); }
+    return;
+  }
+  if (t.dataset.delAppr) {
+    S.approvals = S.approvals.filter(a => a.id !== t.dataset.delAppr); commit(); return;
+  }
+  if (t.dataset.delEv) {
+    S.events = S.events.filter(e => e.id !== t.dataset.delEv); commit(); return;
+  }
+  if (t.dataset.fixbrand) {
+    const e = findEvent(t.dataset.fixbrand);
+    if (e) {
+      e.name = e.name.replace(/regeneration\s+day(?!s)\b/gi, "REGENERATION DAYS");
+      commit(); toast("Brand corrected to “" + BRAND + "”.");
+    }
+    return;
+  }
+});
+
+document.addEventListener("change", ev => {
+  const el = ev.target;
+
+  if (el.id === "xlsFile" && el.files && el.files[0]) {
+    const f = el.files[0], reader = new FileReader();
+    reader.onload = () => {
+      try {
+        const wb = XLSX.read(reader.result, { type:"array" });
+        const sheet = wb.Sheets[wb.SheetNames[0]];
+        openMapper(XLSX.utils.sheet_to_json(sheet, { header:1, raw:true, defval:"" }));
+      } catch (e) {
+        toast("Could not read that file. Try saving it as .xlsx or paste the cells.");
+      }
+    };
+    reader.onerror = () => toast("Could not read that file.");
+    reader.readAsArrayBuffer(f);
+    return;
+  }
+
+  if (el.id === "asOfIn") { S.asOf = el.value || todayISO(); commit(); return; }
+
+  if (el.dataset.ev && el.dataset.item) {
+    const e = findEvent(el.dataset.ev);
+    if (e) { e.status = { ...(e.status || {}), [el.dataset.item]: el.value }; commit(); }
+    return;
+  }
+  if (el.dataset.ev && el.dataset.evfield) {
+    const e = findEvent(el.dataset.ev);
+    if (e) {
+      e[el.dataset.evfield] = el.dataset.evfield === "date" ? el.value : el.value.trim();
+      commit();
+    }
+    return;
+  }
+  if (el.dataset.edit && el.dataset.id) {
+    const d = findDist(el.dataset.id);
+    if (d) {
+      d[el.dataset.edit] = (el.dataset.edit === "target" || el.dataset.edit === "booked")
+        ? parseMoney(el.value) : el.value;
+      commit();
+    }
+    return;
+  }
+});
+
+function selectReport(){
+  const pre = document.getElementById("reportBody");
+  if (!pre) return;
+  const r = document.createRange();
+  r.selectNodeContents(pre);
+  const sel = window.getSelection();
+  sel.removeAllRanges(); sel.addRange(r);
+  toast("Copying was blocked — the report is selected, press ⌘C / Ctrl+C.");
+}
+
+let downloads = null;
+function downloadReport(){
+  const name = "botiss-daily-status-" + todayISO() + ".txt";
+  if (!downloads) { selectReport(); return; }
+  downloads.save({ filename:name, data:buildReport() })
+    .then(() => toast("Report saved."))
+    .catch(err => {
+      const code = err && err.code;
+      if (code === "declined") return;
+      if (code === "rate_limited") { toast("Wait a moment, then try the download again."); return; }
+      toast("Could not save the file here. Use Copy report instead.");
+    });
+}
+
+/* =====================================================================
+   8. BOOT — render first, light capabilities up as they arrive.
+   ===================================================================== */
+
+function start(hot){
+  if (hot && hot.tab) tab = hot.tab;
+  renderStorePill();
+  render();
+}
+
+if (window.claude && window.claude.hot && window.claude.hot.snapshot) {
+  window.claude.hot.snapshot(() => ({ tab }));
+}
+if (window.claude && window.claude.hot && window.claude.hot.ready) {
+  window.claude.hot.ready(start);
+} else {
+  start((window.claude && window.claude.hot && window.claude.hot.data) || {});
+}
+
+if (window.claude && typeof window.claude.use === "function") {
+  window.claude.use("db").then(db => {
+    if (!db) return;
+    const ref = db.doc("state/board");
+    ref.onSnapshot(snap => {
+      if (snap.exists) {
+        const remote = snap.data();
+        if (remote && remote.v) {
+          const mine = Date.parse(S.updatedAt || 0) || 0;
+          const theirs = Date.parse(remote.updatedAt || 0) || 0;
+          if (!snap.metadata.hasPendingWrites && theirs >= mine) {
+            S = JSON.parse(JSON.stringify(remote));
+            saveLocal();
+            render();
+          }
+        }
+      }
+      if (storeMode !== "shared") { storeMode = "shared"; renderStorePill(); }
+    }, err => {
+      dbRef = null; storeMode = "local"; renderStorePill();
+      if (err && err.code !== "not_granted") {
+        toast("Shared store unavailable — this board is saved on this device only.");
+      }
+    });
+    dbRef = ref;
+    ref.get().then(snap => {
+      if (!snap.exists) {
+        // Nothing shared yet: keep what is on screen and let the first
+        // real edit be what creates the shared copy.
+        storeMode = "shared"; renderStorePill();
+      }
+    }).catch(() => {});
+  }).catch(() => {});
+
+  window.claude.use("downloads").then(d => { downloads = d; }).catch(() => {});
+}
+</script>
