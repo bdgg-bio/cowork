@@ -4,18 +4,16 @@
 <style>
 /* ============================================================
    botiss Daily Desk — the morning check-in board.
-   Three things, every day: where distributors sit against the
-   quarter, which orders are still waiting on an "ok", and how
-   close each BRD event is to being ready.
+   Distributor pace against the quarter, orders waiting on an ok,
+   BRD event readiness, and the event checklist as a live form.
 
    Identity: a departure board. Marine ink, slate-cool paper,
    monospace figures, rules instead of cards, and a severity
-   rail spent only on rows that actually need attention.
-   Diverging poles validated for CVD separation in both themes.
+   rail spent only on rows that need attention. Diverging poles
+   validated for CVD separation in both themes.
    ============================================================ */
 
 :root{
-  /* paper — slate-cool, biased toward the marine accent */
   --ground:#EBEFF2;
   --surface:#FFFFFF;
   --surface-2:#F5F8FA;
@@ -48,8 +46,15 @@
   --idle:#64798C;
   --idle-wash:#E9EEF2;
 
+  /* checklist field owners — the source document's green and red fields */
+  --partner:#1F6B3A;
+  --partner-wash:#E2EFE6;
+  --speaker:#A8341F;
+  --speaker-wash:#FAE6E1;
+
   --track:#E1E7EC;
   --rule:#C6D2DB;
+  --heat:#22496F;
 
   --shadow:0 1px 2px rgba(14,22,32,.05), 0 10px 28px -20px rgba(14,22,32,.35);
 
@@ -60,75 +65,29 @@
 
 @media (prefers-color-scheme:dark){
   :root:not([data-theme="light"]){
-    --ground:#0A1017;
-    --surface:#121A22;
-    --surface-2:#17212A;
-    --sunk:#0D141B;
-    --line:#25323D;
-    --line-soft:#1B242D;
-
-    --ink:#E6ECF2;
-    --ink-2:#B0BFCC;
-    --ink-3:#7E90A0;
-    --ink-inv:#0A1017;
-
-    --marine:#79A8CE;
-    --marine-deep:#A8C8E4;
-    --marine-wash:#14222F;
-    --marine-line:#284457;
-
+    --ground:#0A1017; --surface:#121A22; --surface-2:#17212A; --sunk:#0D141B;
+    --line:#25323D; --line-soft:#1B242D;
+    --ink:#E6ECF2; --ink-2:#B0BFCC; --ink-3:#7E90A0; --ink-inv:#0A1017;
+    --marine:#79A8CE; --marine-deep:#A8C8E4; --marine-wash:#14222F; --marine-line:#284457;
     /* validated dark: ΔE 9.5 deutan, 25.2 normal */
-    --behind:#D66048;
-    --ahead:#1F9F86;
-    --behind-wash:#2D1712;
-    --ahead-wash:#0D2320;
-
-    --waiting:#D6A957;
-    --waiting-wash:#2A2210;
-    --done:#1F9F86;
-    --done-wash:#0D2320;
-    --idle:#7E90A0;
-    --idle-wash:#182129;
-
-    --track:#1E2932;
-    --rule:#2C3B47;
-
+    --behind:#D66048; --ahead:#1F9F86; --behind-wash:#2D1712; --ahead-wash:#0D2320;
+    --waiting:#D6A957; --waiting-wash:#2A2210; --done:#1F9F86; --done-wash:#0D2320;
+    --idle:#7E90A0; --idle-wash:#182129;
+    --partner:#63B884; --partner-wash:#10251A; --speaker:#E08D77; --speaker-wash:#2B1712;
+    --track:#1E2932; --rule:#2C3B47; --heat:#79A8CE;
     --shadow:0 1px 2px rgba(0,0,0,.45), 0 10px 28px -20px rgba(0,0,0,.8);
   }
 }
 :root[data-theme="dark"]{
-  --ground:#0A1017;
-  --surface:#121A22;
-  --surface-2:#17212A;
-  --sunk:#0D141B;
-  --line:#25323D;
-  --line-soft:#1B242D;
-
-  --ink:#E6ECF2;
-  --ink-2:#B0BFCC;
-  --ink-3:#7E90A0;
-  --ink-inv:#0A1017;
-
-  --marine:#79A8CE;
-  --marine-deep:#A8C8E4;
-  --marine-wash:#14222F;
-  --marine-line:#284457;
-
-  --behind:#D66048;
-  --ahead:#1F9F86;
-  --behind-wash:#2D1712;
-  --ahead-wash:#0D2320;
-
-  --waiting:#D6A957;
-  --waiting-wash:#2A2210;
-  --done:#1F9F86;
-  --done-wash:#0D2320;
-  --idle:#7E90A0;
-  --idle-wash:#182129;
-
-  --track:#1E2932;
-  --rule:#2C3B47;
-
+  --ground:#0A1017; --surface:#121A22; --surface-2:#17212A; --sunk:#0D141B;
+  --line:#25323D; --line-soft:#1B242D;
+  --ink:#E6ECF2; --ink-2:#B0BFCC; --ink-3:#7E90A0; --ink-inv:#0A1017;
+  --marine:#79A8CE; --marine-deep:#A8C8E4; --marine-wash:#14222F; --marine-line:#284457;
+  --behind:#D66048; --ahead:#1F9F86; --behind-wash:#2D1712; --ahead-wash:#0D2320;
+  --waiting:#D6A957; --waiting-wash:#2A2210; --done:#1F9F86; --done-wash:#0D2320;
+  --idle:#7E90A0; --idle-wash:#182129;
+  --partner:#63B884; --partner-wash:#10251A; --speaker:#E08D77; --speaker-wash:#2B1712;
+  --track:#1E2932; --rule:#2C3B47; --heat:#79A8CE;
   --shadow:0 1px 2px rgba(0,0,0,.45), 0 10px 28px -20px rgba(0,0,0,.8);
 }
 
@@ -138,27 +97,23 @@ body{
   font-family:var(--f-body); font-size:15px; line-height:1.5;
   -webkit-font-smoothing:antialiased;
 }
-h1,h2,h3{font-family:var(--f-disp); font-weight:600; letter-spacing:-.015em; text-wrap:balance; margin:0}
+h1,h2,h3,h4{font-family:var(--f-disp); font-weight:600; letter-spacing:-.015em; text-wrap:balance; margin:0}
 p{margin:0}
 button{font-family:inherit; font-size:inherit; color:inherit}
 :focus-visible{outline:2px solid var(--marine); outline-offset:2px; border-radius:4px}
 .num{font-family:var(--f-mono); font-variant-numeric:tabular-nums}
+.mutedcell{color:var(--ink-3); font-size:11.5px}
 
 /* ---------- day bar ---------- */
-.daybar{
-  position:sticky; top:0; z-index:40;
-  background:var(--surface); border-bottom:1px solid var(--line);
-}
+.daybar{position:sticky; top:0; z-index:40; background:var(--surface); border-bottom:1px solid var(--line)}
 .daybar-in{
-  max-width:900px; margin:0 auto; padding-block:11px; padding-left:16px; padding-right:16px;
+  max-width:940px; margin:0 auto; padding-block:11px; padding-left:16px; padding-right:16px;
   display:flex; align-items:center; gap:10px; flex-wrap:wrap;
 }
 .wordmark{font-family:var(--f-disp); font-weight:700; font-size:16.5px; letter-spacing:-.02em; white-space:nowrap}
 .wordmark span{color:var(--marine)}
-.today{
-  font-family:var(--f-mono); font-size:11.5px; color:var(--ink-3);
-  padding-left:11px; border-left:1px solid var(--line); white-space:nowrap;
-}
+.today{font-family:var(--f-mono); font-size:11.5px; color:var(--ink-3);
+  padding-left:11px; border-left:1px solid var(--line); white-space:nowrap}
 .daybar .grow{flex:1 1 20px}
 
 .pill{
@@ -172,86 +127,72 @@ button{font-family:inherit; font-size:inherit; color:inherit}
 
 /* ---------- tabs ---------- */
 .tabsrow{background:var(--surface); border-bottom:1px solid var(--line)}
-.tabs{
-  max-width:900px; margin:0 auto; padding-left:16px; padding-right:16px;
-  display:flex; gap:2px; overflow-x:auto; scrollbar-width:none;
-}
+.tabs{max-width:940px; margin:0 auto; padding-left:16px; padding-right:16px;
+  display:flex; gap:2px; overflow-x:auto; scrollbar-width:none}
 .tabs::-webkit-scrollbar{display:none}
 .tab{
   flex:0 0 auto; display:inline-flex; align-items:center; gap:7px;
   padding:9px 12px 10px; border:none; background:none; cursor:pointer;
   font-size:13.5px; font-weight:500; color:var(--ink-3);
-  border-bottom:2px solid transparent; margin-bottom:-1px;
+  border-bottom:2px solid transparent; margin-bottom:-1px; white-space:nowrap;
 }
 .tab:hover{color:var(--ink-2)}
 .tab[aria-selected="true"]{color:var(--marine); border-bottom-color:var(--marine)}
-.tab .count{
-  font-family:var(--f-mono); font-size:10.5px; padding:1px 5px; border-radius:4px;
-  background:var(--sunk); color:var(--ink-3);
-}
+.tab .count{font-family:var(--f-mono); font-size:10.5px; padding:1px 5px; border-radius:4px;
+  background:var(--sunk); color:var(--ink-3)}
 .tab .count.hot{background:var(--behind-wash); color:var(--behind)}
 .tab .count.warm{background:var(--waiting-wash); color:var(--waiting)}
 
 /* ---------- page ---------- */
-.wrap{max-width:900px; margin:0 auto; padding-block:20px 72px; padding-left:16px; padding-right:16px}
+.wrap{max-width:940px; margin:0 auto; padding-block:20px 72px; padding-left:16px; padding-right:16px}
 .stack{display:flex; flex-direction:column; gap:16px}
-.stack.tight{gap:11px}
 
 .sect{background:var(--surface); border:1px solid var(--line); border-radius:10px; padding:15px 16px}
 .sect.plain{background:none; border:none; padding:0}
 .sect-head{display:flex; align-items:baseline; gap:10px; flex-wrap:wrap; margin-bottom:13px}
 .sect-head h2{font-size:14.5px; flex:1 1 auto; min-width:min(100%,12ch)}
 .sect-head .hint{font-size:11.5px; color:var(--ink-3); margin-left:auto; text-align:right}
-.eyebrow{
-  font-family:var(--f-mono); font-size:10px; font-weight:500; letter-spacing:.14em;
-  text-transform:uppercase; color:var(--marine);
-}
-.label{
-  font-family:var(--f-mono); font-size:10px; font-weight:500; letter-spacing:.12em;
-  text-transform:uppercase; color:var(--ink-3);
-}
+.eyebrow{font-family:var(--f-mono); font-size:10px; font-weight:500; letter-spacing:.14em;
+  text-transform:uppercase; color:var(--marine)}
+.label{font-family:var(--f-mono); font-size:10px; font-weight:500; letter-spacing:.12em;
+  text-transform:uppercase; color:var(--ink-3)}
 
 /* ---------- figures ---------- */
-.figs{
-  display:grid; grid-template-columns:repeat(auto-fit,minmax(142px,1fr)); gap:1px;
-  background:var(--line); border:1px solid var(--line); border-radius:10px; overflow:hidden;
-}
+.figs{display:grid; grid-template-columns:repeat(auto-fit,minmax(146px,1fr)); gap:1px;
+  background:var(--line); border:1px solid var(--line); border-radius:10px; overflow:hidden}
 .fig{background:var(--surface); padding:13px 14px}
-.fig .v{font-family:var(--f-disp); font-size:22px; font-weight:600; letter-spacing:-.02em; line-height:1.15;
-  font-variant-numeric:tabular-nums}
+.fig .v{font-family:var(--f-disp); font-size:21px; font-weight:600; letter-spacing:-.02em;
+  line-height:1.15; font-variant-numeric:tabular-nums}
 .fig .k{font-size:12px; color:var(--ink-2); margin-top:5px; line-height:1.35}
 .fig .s{font-size:10.5px; color:var(--ink-3); margin-top:3px}
 .fig.behind .v{color:var(--behind)}
 .fig.ahead .v{color:var(--ahead)}
 
 /* ---------- chips ---------- */
-.chip{
-  display:inline-flex; align-items:center; gap:5px; white-space:nowrap;
+.chip{display:inline-flex; align-items:center; gap:5px; white-space:nowrap;
   font-size:11.5px; font-weight:500; padding:2px 7px; border-radius:5px;
-  background:var(--sunk); color:var(--ink-2);
-}
+  background:var(--sunk); color:var(--ink-2)}
 .chip.behind{background:var(--behind-wash); color:var(--behind)}
 .chip.ahead{background:var(--ahead-wash); color:var(--ahead)}
 .chip.waiting{background:var(--waiting-wash); color:var(--waiting)}
 .chip.done{background:var(--done-wash); color:var(--done)}
 .chip.idle{background:var(--idle-wash); color:var(--ink-3)}
 .chip.marine{background:var(--marine-wash); color:var(--marine-deep)}
+.chip.partner{background:var(--partner-wash); color:var(--partner)}
+.chip.speaker{background:var(--speaker-wash); color:var(--speaker)}
+.chip.terms{font-family:var(--f-mono); font-size:10.5px}
 .chip svg{width:12px; height:12px; stroke:currentColor; fill:none; stroke-width:2.1;
   stroke-linecap:round; stroke-linejoin:round; flex-shrink:0}
 .chiprow{display:flex; flex-wrap:wrap; gap:6px; align-items:center}
 
 /* ---------- buttons & fields ---------- */
-.btn{
-  display:inline-flex; align-items:center; justify-content:center; gap:7px;
+.btn{display:inline-flex; align-items:center; justify-content:center; gap:7px;
   padding:8px 13px; border-radius:8px; border:1px solid var(--line);
   background:var(--surface); color:var(--ink); font-size:13.5px; font-weight:500;
-  cursor:pointer; transition:border-color .15s, background .15s;
-}
+  cursor:pointer; transition:border-color .15s, background .15s}
 .btn:hover:not(:disabled){border-color:var(--ink-3)}
 .btn:disabled{opacity:.45; cursor:not-allowed}
 .btn.primary{background:var(--marine); border-color:var(--marine); color:#fff}
-:root[data-theme="dark"] .btn.primary,
-.btn.primary{color:#fff}
 .btn.primary:hover:not(:disabled){background:var(--marine-deep); border-color:var(--marine-deep)}
 .btn.sm{padding:5px 9px; font-size:12.5px; border-radius:7px}
 .btn.quiet{border-color:transparent; background:none; color:var(--ink-3); padding:5px 7px}
@@ -261,11 +202,10 @@ button{font-family:inherit; font-size:inherit; color:inherit}
 .btnrow{display:flex; flex-wrap:wrap; gap:8px; align-items:center}
 
 label.fld{display:block; font-size:11px; font-weight:600; color:var(--ink-2); margin-bottom:4px}
-input,select,textarea{
-  width:100%; font-family:inherit; font-size:14px; color:var(--ink);
-  background:var(--surface); border:1px solid var(--line); border-radius:7px; padding:8px 9px;
-}
+input,select,textarea{width:100%; font-family:inherit; font-size:14px; color:var(--ink);
+  background:var(--surface); border:1px solid var(--line); border-radius:7px; padding:8px 9px}
 input[type=number],input.money{font-family:var(--f-mono); font-variant-numeric:tabular-nums}
+input[type=checkbox]{width:auto; accent-color:var(--marine)}
 textarea{resize:vertical; min-height:58px}
 input:focus,select:focus,textarea:focus{outline:none; border-color:var(--marine);
   box-shadow:0 0 0 3px var(--marine-wash)}
@@ -273,11 +213,9 @@ input:focus,select:focus,textarea:focus{outline:none; border-color:var(--marine)
 .formgrid.wide{grid-template-columns:repeat(auto-fit,minmax(180px,1fr))}
 
 /* ---------- notices ---------- */
-.notice{
-  display:flex; gap:10px; padding:11px 13px; border-radius:9px; font-size:12.5px;
+.notice{display:flex; gap:10px; padding:11px 13px; border-radius:9px; font-size:12.5px;
   line-height:1.5; background:var(--waiting-wash); color:var(--waiting);
-  border:1px solid color-mix(in srgb, var(--waiting) 24%, transparent);
-}
+  border:1px solid color-mix(in srgb, var(--waiting) 24%, transparent)}
 .notice.info{background:var(--marine-wash); color:var(--marine-deep); border-color:var(--marine-line)}
 .notice.bad{background:var(--behind-wash); color:var(--behind);
   border-color:color-mix(in srgb, var(--behind) 26%, transparent)}
@@ -287,20 +225,17 @@ input:focus,select:focus,textarea:focus{outline:none; border-color:var(--marine)
 .notice strong{font-weight:600}
 .notice .btn{margin-top:8px}
 
-/* ---------- pace chart (diverging, HTML/CSS marks) ---------- */
+/* ---------- pace chart (diverging) ---------- */
 .chartwrap{position:relative}
 .legend{display:flex; flex-wrap:wrap; gap:14px; font-size:11.5px; color:var(--ink-2); margin-bottom:11px}
 .legend span{display:inline-flex; align-items:center; gap:6px}
 .legend i{width:10px; height:10px; border-radius:2px; flex-shrink:0}
 
 .pace{display:flex; flex-direction:column; gap:5px}
-.pacerow{
-  display:grid; grid-template-columns:minmax(120px,212px) minmax(0,1fr) 104px;
-  gap:11px; align-items:center; padding:2px 0; border-radius:6px;
-}
+.pacerow{display:grid; grid-template-columns:minmax(120px,212px) minmax(0,1fr) 108px;
+  gap:11px; align-items:center; padding:2px 0; border-radius:6px}
 .pacerow:hover{background:var(--surface-2)}
-.pacerow .who{font-size:12.5px; color:var(--ink); overflow:hidden; text-overflow:ellipsis;
-  white-space:nowrap}
+.pacerow .who{font-size:12.5px; color:var(--ink); overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
 .pacerow .who b{font-weight:600}
 .pacerow .amt{font-family:var(--f-mono); font-size:11.5px; text-align:right;
   font-variant-numeric:tabular-nums}
@@ -308,20 +243,17 @@ input:focus,select:focus,textarea:focus{outline:none; border-color:var(--marine)
 .pacerow .amt.ahead{color:var(--ahead)}
 
 .track{position:relative; height:15px; background:var(--track); border-radius:3px}
-.track .zero{position:absolute; left:50%; top:-3px; bottom:-3px; width:1px;
-  background:var(--rule)}
+.track .zero{position:absolute; left:50%; top:-3px; bottom:-3px; width:1px; background:var(--rule)}
 .bar{position:absolute; top:1px; bottom:1px; min-width:2px}
 .bar.behind{right:50%; margin-right:1px; background:var(--behind); border-radius:3px 0 0 3px}
 .bar.ahead{left:50%; margin-left:1px; background:var(--ahead); border-radius:0 3px 3px 0}
 
-.axis{display:grid; grid-template-columns:minmax(120px,212px) minmax(0,1fr) 104px; gap:11px;
-  margin-top:9px}
+.axis{display:grid; grid-template-columns:minmax(120px,212px) minmax(0,1fr) 108px; gap:11px; margin-top:9px}
 .axis .scale{display:flex; justify-content:space-between; font-family:var(--f-mono);
   font-size:10px; color:var(--ink-3); grid-column:2}
-.axis .scaleline{grid-column:2; position:relative; height:1px; background:var(--line-soft);
-  margin-bottom:5px}
+.axis .scaleline{grid-column:2; position:relative; height:1px; background:var(--line-soft); margin-bottom:5px}
 
-@media (max-width:600px){
+@media (max-width:640px){
   .pacerow{grid-template-columns:minmax(0,1fr) auto; gap:3px 8px; padding:5px 0;
     border-bottom:1px solid var(--line-soft)}
   .pacerow .who{grid-column:1; grid-row:1}
@@ -331,21 +263,33 @@ input:focus,select:focus,textarea:focus{outline:none; border-color:var(--marine)
   .axis .scale,.axis .scaleline{grid-column:1}
 }
 
-.tip{
-  position:absolute; pointer-events:none; opacity:0; transform:translate(-50%,-118%);
+.tip{position:absolute; pointer-events:none; opacity:0; transform:translate(-50%,-118%);
   background:var(--ink); color:var(--ink-inv); font-size:11.5px; padding:7px 9px;
   border-radius:7px; white-space:nowrap; transition:opacity .12s; z-index:20;
-  box-shadow:var(--shadow); line-height:1.45;
-}
+  box-shadow:var(--shadow); line-height:1.45}
 .tip b{font-weight:600}
-.tip .num{opacity:.88}
+
+/* ---------- month heatmap ---------- */
+.heat{display:flex; flex-direction:column; gap:3px}
+.heatrow{display:grid; grid-template-columns:minmax(110px,190px) repeat(12,minmax(0,1fr)) 88px;
+  gap:2px; align-items:center}
+.heatrow .hname{font-size:12px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
+  padding-right:6px}
+.heatrow .hm{font-family:var(--f-mono); font-size:9px; color:var(--ink-3); text-align:center}
+.heatrow .htot{font-family:var(--f-mono); font-size:11px; text-align:right; color:var(--ink-2);
+  font-variant-numeric:tabular-nums}
+.cell{height:19px; border-radius:2px; background:var(--sunk)}
+.cell.now{box-shadow:inset 0 0 0 1.5px var(--marine)}
+.cell.neg{background:var(--behind-wash); box-shadow:inset 0 0 0 1px var(--behind)}
+@media (max-width:780px){
+  .heatrow{grid-template-columns:minmax(76px,1fr) repeat(12,minmax(0,1fr))}
+  .heatrow .htot{display:none}
+}
 
 /* ---------- rows / lists ---------- */
 .rows{display:flex; flex-direction:column}
-.row{
-  display:flex; gap:11px; align-items:flex-start; padding:11px 0;
-  border-bottom:1px solid var(--line-soft);
-}
+.row{display:flex; gap:11px; align-items:flex-start; padding:11px 0;
+  border-bottom:1px solid var(--line-soft)}
 .row:last-child{border-bottom:none}
 .row .rail{width:3px; border-radius:999px; align-self:stretch; flex-shrink:0; background:transparent}
 .row.attention .rail{background:var(--behind)}
@@ -355,21 +299,17 @@ input:focus,select:focus,textarea:focus{outline:none; border-color:var(--marine)
 .row .rmeta{font-size:11.5px; color:var(--ink-3); margin-top:3px; overflow-wrap:anywhere}
 .row .ract{flex-shrink:0}
 
-.grouphead{
-  display:flex; align-items:center; gap:9px; margin:16px 0 3px;
+.grouphead{display:flex; align-items:center; gap:9px; margin:16px 0 3px;
   font-family:var(--f-mono); font-size:10px; font-weight:500; letter-spacing:.12em;
-  text-transform:uppercase; color:var(--ink-3);
-}
+  text-transform:uppercase; color:var(--ink-3)}
 .grouphead::after{content:""; flex:1; height:1px; background:var(--line-soft)}
 .grouphead:first-child{margin-top:0}
 
 .scroller{overflow-x:auto; -webkit-overflow-scrolling:touch}
 table{width:100%; border-collapse:collapse; font-size:13px}
-th{
-  font-family:var(--f-mono); font-size:9.5px; font-weight:500; letter-spacing:.1em;
+th{font-family:var(--f-mono); font-size:9.5px; font-weight:500; letter-spacing:.1em;
   text-transform:uppercase; color:var(--ink-3); text-align:left;
-  padding:7px 9px; border-bottom:1px solid var(--line); white-space:nowrap;
-}
+  padding:7px 9px; border-bottom:1px solid var(--line); white-space:nowrap}
 th.r,td.r{text-align:right}
 td{padding:8px 9px; border-bottom:1px solid var(--line-soft); vertical-align:middle}
 tbody tr:last-child td{border-bottom:none}
@@ -380,43 +320,87 @@ td input{padding:5px 7px; font-size:12.5px}
 
 /* ---------- event blocks ---------- */
 .ev{background:var(--surface); border:1px solid var(--line); border-radius:10px; overflow:hidden}
-.ev.soon{border-color:color-mix(in srgb, var(--waiting) 42%, var(--line))}
+.ev.soon{border-color:color-mix(in srgb, var(--waiting) 45%, var(--line))}
+.ev.past{opacity:.7}
 .ev > header{padding:13px 15px; border-bottom:1px solid var(--line-soft);
-  display:flex; gap:11px; align-items:flex-start; flex-wrap:wrap}
+  display:flex; gap:9px 11px; align-items:flex-start; flex-wrap:wrap}
 .ev h3{font-size:14.5px; flex:1 1 190px; min-width:0; overflow-wrap:anywhere}
-.ev .when{font-family:var(--f-mono); font-size:11.5px; color:var(--ink-2); white-space:nowrap}
+.ev .when{font-family:var(--f-mono); font-size:11.5px; color:var(--ink-2)}
 .ev .speaker{font-size:11.5px; color:var(--ink-3); flex-basis:100%}
+.ev .rawnote{font-family:var(--f-mono); font-size:10.5px; color:var(--ink-3); flex-basis:100%;
+  overflow-wrap:anywhere}
 .ready{display:flex; flex-direction:column}
-.ready .item{
-  display:grid; grid-template-columns:1fr 152px; gap:9px 13px; align-items:center;
-  padding:10px 15px; border-bottom:1px solid var(--line-soft);
-}
+.ready .item{display:grid; grid-template-columns:1fr 152px; gap:9px 13px; align-items:center;
+  padding:10px 15px; border-bottom:1px solid var(--line-soft)}
 .ready .item:last-child{border-bottom:none}
 .ready .item .nm{font-size:13px; font-weight:500}
 .ready .item .note{font-size:11px; color:var(--ink-3); margin-top:2px; line-height:1.4;
   grid-column:1; overflow-wrap:anywhere}
 .ready .item select{font-size:12.5px; padding:6px 8px}
 .ready .item .selwrap{grid-column:2; grid-row:1 / span 2; align-self:center}
-@media (max-width:520px){
+@media (max-width:560px){
   .ready .item{grid-template-columns:1fr}
   .ready .item .selwrap{grid-column:1; grid-row:auto}
 }
 .ev > footer{padding:10px 15px; background:var(--surface-2); border-top:1px solid var(--line-soft);
-  display:flex; gap:8px; flex-wrap:wrap; align-items:center}
+  display:flex; gap:8px; flex-wrap:wrap; align-items:flex-end}
 
-/* ---------- report ---------- */
-.report{
-  font-family:var(--f-mono); font-size:12.5px; line-height:1.65; white-space:pre-wrap;
+/* ---------- checklist ---------- */
+.meter{height:6px; border-radius:999px; background:var(--sunk); overflow:hidden; display:flex}
+.meter i{display:block; height:100%}
+.meter i.b{background:var(--marine)}
+.meter i.p{background:var(--partner)}
+.meter i.s{background:var(--speaker)}
+
+.cl{background:var(--surface); border:1px solid var(--line); border-radius:10px; overflow:hidden}
+.cl > button.clhead{display:flex; width:100%; gap:11px; align-items:center; text-align:left;
+  padding:12px 15px; background:none; border:none; cursor:pointer}
+.cl h3{font-size:13.5px; flex:1 1 auto; min-width:0}
+.cl .caret{color:var(--ink-3); flex-shrink:0; transition:transform .18s; display:inline-flex}
+.cl .caret svg{width:16px; height:16px; stroke:currentColor; fill:none; stroke-width:1.9;
+  stroke-linecap:round; stroke-linejoin:round}
+.cl[data-open="true"] .caret{transform:rotate(180deg)}
+.clbody{border-top:1px solid var(--line-soft); display:flex; flex-direction:column}
+.cli{padding:11px 15px; border-bottom:1px solid var(--line-soft)}
+.cli:last-child{border-bottom:none}
+.cli .cltop{display:flex; gap:9px; align-items:flex-start; flex-wrap:wrap}
+.cli .cllab{font-size:13px; font-weight:500; flex:1 1 200px; min-width:0; overflow-wrap:anywhere}
+.cli .clhint{font-size:11px; color:var(--ink-3); line-height:1.45; margin-top:4px;
+  overflow-wrap:anywhere}
+.cli .clfield{margin-top:8px}
+.cli.done{background:var(--surface-2)}
+.cli .subs{display:flex; flex-wrap:wrap; gap:6px 14px; margin-top:9px}
+.cli .subs label{display:inline-flex; align-items:center; gap:6px; font-size:12px;
+  color:var(--ink-2); cursor:pointer}
+.cli .qtyrow{display:grid; grid-template-columns:120px minmax(0,1fr); gap:9px; margin-top:8px}
+@media (max-width:520px){.cli .qtyrow{grid-template-columns:1fr}}
+.cli .tick{display:inline-flex; align-items:center; gap:8px; font-size:13px; cursor:pointer}
+
+.tagpool{display:flex; flex-wrap:wrap; gap:6px; margin-top:9px}
+.tagbtn{padding:5px 10px; border-radius:999px; border:1px solid var(--line);
+  background:var(--surface); font-size:12px; cursor:pointer; color:var(--ink-2)}
+.tagbtn[aria-pressed="true"]{background:var(--marine-wash); border-color:var(--marine-line);
+  color:var(--marine-deep); font-weight:500}
+.tagbtn:disabled{opacity:.4; cursor:not-allowed}
+
+.tt{display:flex; flex-direction:column; gap:6px; margin-top:9px}
+.ttrow{display:grid; grid-template-columns:104px minmax(0,1fr); gap:9px; align-items:center}
+.ttrow .tmark{font-family:var(--f-mono); font-size:11.5px; color:var(--ink-3)}
+.ttrow .tbreak{font-size:12px; color:var(--ink-3); font-style:italic}
+@media (max-width:520px){.ttrow{grid-template-columns:1fr; gap:3px}}
+
+.spk{border:1px solid var(--line); border-radius:9px; padding:12px; margin-top:9px;
+  background:var(--surface-2)}
+.spk h4{font-size:12.5px; margin-bottom:9px; display:flex; align-items:center; gap:8px}
+.spk h4 .grow{flex:1}
+
+.report{font-family:var(--f-mono); font-size:12.5px; line-height:1.65; white-space:pre-wrap;
   overflow-wrap:anywhere; background:var(--surface); color:var(--ink);
-  border:1px solid var(--line); border-radius:10px; padding:16px; margin:0;
-}
-.toast{
-  position:fixed; left:50%; bottom:22px; transform:translateX(-50%) translateY(12px);
+  border:1px solid var(--line); border-radius:10px; padding:16px; margin:0}
+.toast{position:fixed; left:50%; bottom:22px; transform:translateX(-50%) translateY(12px);
   background:var(--ink); color:var(--ink-inv); font-size:12.5px; padding:9px 14px;
   border-radius:999px; box-shadow:var(--shadow); opacity:0; pointer-events:none;
-  transition:opacity .18s, transform .18s; z-index:60; max-width:calc(100vw - 32px);
-  text-align:center;
-}
+  transition:opacity .18s, transform .18s; z-index:60; max-width:calc(100vw - 32px); text-align:center}
 .toast.on{opacity:1; transform:translateX(-50%) translateY(0)}
 
 .foot{margin-top:26px; padding-top:14px; border-top:1px solid var(--line);
@@ -447,18 +431,31 @@ td input{padding:5px 7px; font-size:12.5px}
 "use strict";
 
 /* =====================================================================
-   1. THE RULES — lifted straight from the daily status check-in, so the
-      board and the report can never disagree with each other.
-      · gap = Q3 target − booked. Positive = behind pace.
-      · €0 target AND €0 booked = "no active target this year": its own
-        group at the bottom, never interleaved into the alphabetical list.
-      · Main list sorts alphabetically by country. "Needs attention"
-        ranks only the behind-pace ones, by absolute euro gap.
-      · A "?" in a distributor name means the name is unconfirmed. It is
-        carried over exactly as written, never resolved by guessing.
-      · Every event gets the same five readiness lines, in the same
-        order, even when all five are "no update yet".
-      · Nothing is ever guessed. Unreported = "no update yet".
+   1. THE SHEET — read out of 2026_plan.xlsx, sheets "revenues" and
+      "events". The Q3 target is the sheet's own column (full-year
+      target / 4 x 3) and booked is its "2026" column, which already
+      sums whatever monthly cells are filled in, September included.
+      Nothing is recomputed here differently from the sheet.
+   ===================================================================== */
+
+const SHEET_DISTRIBUTORS = [{"country": "Bahrain","distributor": "Behzad","terms": "5+1","raw": "Bahrain - Behzad 5+1","uncertain": false,"target": 8153.25,"booked": 15277.17,"q3": 6114.94,"plan26": 10000,"plan27": 20000,"y2024": 0.0,"y2025": 7765.0,"budget": 407.66,"months": {"March": 8977.17,"September": 6300.0}},{"country": "Bulgaria","distributor": "Ultradental","terms": "4+1","raw": "Bulgaria-Ultradental 4+1","uncertain": false,"target": 231314.86,"booked": 109994.35,"q3": 173486.15,"plan26": 200000,"plan27": 220000,"y2024": 200193.85,"y2025": 220299.87,"budget": 11565.74,"months": {"January": 9967.24,"February": 13716.24,"March": 14172.03,"April": 36784.94,"May": 9889.62,"June": 10207.79,"July": 9962.0,"August": 5294.49}},{"country": "Egypt","distributor": "ALLAM","terms": "5+1","raw": "Egypt ALLAM 5+1","uncertain": false,"target": 0.0,"booked": 0.0,"q3": 0.0,"plan26": 0,"plan27": 0,"y2024": 0.0,"y2025": 0.0,"budget": 0.0,"months": {}},{"country": "Iran","distributor": "EMCO","terms": "4+1","raw": "Iran-EMCO 4+1","uncertain": false,"target": 0.0,"booked": 0.0,"q3": 0.0,"plan26": 0,"plan27": 0,"y2024": -75000.0,"y2025": 268784.69,"budget": 0.0,"months": {}},{"country": "Jordan","distributor": "Khoury Dental","terms": "4+1","raw": "Jordan-Khoury Dental 4+1","uncertain": false,"target": 105000.0,"booked": 88351.25,"q3": 78750.0,"plan26": 105000,"plan27": 120000,"y2024": 67597.82,"y2025": 125009.14,"budget": 5250.0,"months": {"March": 25304.87,"June": 32563.96,"September": 30482.42}},{"country": "KSA","distributor": "","terms": "5+1","raw": "KSA 5+1 ?","uncertain": true,"target": 38432.18,"booked": 12772.95,"q3": 28824.14,"plan26": 30000,"plan27": 50000,"y2024": 9028.08,"y2025": 36602.08,"budget": 1921.61,"months": {"March": 12772.95}},{"country": "Kuwait","distributor": "RoyalPedia","terms": "4+1","raw": "Kuwait-RoyalPedia 4+1","uncertain": false,"target": 212996.65,"booked": 207262.23,"q3": 159747.49,"plan26": 250000,"plan27": 275000,"y2024": 407398.76,"y2025": 202853.95,"budget": 10649.83,"months": {"January": 47359.73,"February": 6683.55,"April": 65400.48,"May": 50650.73,"August": 37167.74}},{"country": "Lebanon","distributor": "DMS","terms": "4+1","raw": "Lebanon-DMS 4+1","uncertain": false,"target": 125241.97,"booked": 150728.65,"q3": 93931.48,"plan26": 150000,"plan27": 165000,"y2024": 146738.22,"y2025": 119278.07,"budget": 6262.1,"months": {"January": 62720.66,"February": -931.2,"March": 54587.97,"September": 34351.22}},{"country": "Macedonia","distributor": "VIK Dental","terms": "4+1","raw": "Macedonia-VIK Dental 4+1","uncertain": false,"target": 67957.76,"booked": 52758.62,"q3": 50968.32,"plan26": 65000,"plan27": 72000,"y2024": 58122.08,"y2025": 64721.68,"budget": 3397.89,"months": {"January": 6955.48,"February": 4247.13,"April": 11898.54,"June": 8771.99,"August": 8844.68,"September": 12040.8}},{"country": "Oman","distributor": "EMCO","terms": "","raw": "Oman-EMCO","uncertain": false,"target": 0.0,"booked": 0.0,"q3": 0.0,"plan26": 0,"plan27": 0,"y2024": 0.0,"y2025": 0.0,"budget": 0.0,"months": {}},{"country": "Qatar","distributor": "Q BIOTECH","terms": "4+1","raw": "Qatar - Q BIOTECH 4+1","uncertain": false,"target": 108099.12,"booked": 62443.29,"q3": 81074.34,"plan26": 110000,"plan27": 120000,"y2024": 89749.49,"y2025": 102951.54,"budget": 5404.96,"months": {"February": 14134.0,"April": 14593.1,"June": 33716.19}},{"country": "Syria","distributor": "BH Co","terms": "5+1","raw": "Syria-BH Co 5+1 ?","uncertain": true,"target": 26670.76,"booked": 28906.43,"q3": 20003.07,"plan26": 29000,"plan27": 30000,"y2024": 6124.53,"y2025": 25400.72,"budget": 1333.54,"months": {"April": 28906.43}},{"country": "UAE","distributor": "Nobel Medical","terms": "4+1","raw": "UAE-Nobel Medical 4+1","uncertain": false,"target": 286983.47,"booked": 117223.09,"q3": 215237.6,"plan26": 200000,"plan27": 220000,"y2024": 272396.99,"y2025": 273317.59,"budget": 14349.17,"months": {"January": 913.92,"February": 61453.7,"June": 54855.47}},{"country": "UK","distributor": "megagen","terms": "4+1","raw": "UK - megagen 4+1","uncertain": false,"target": 179051.23,"booked": 154715.03,"q3": 134288.42,"plan26": 220000,"plan27": 250000,"y2024": 112593.61,"y2025": 170524.98,"budget": 8952.56,"months": {"January": 10220.19,"February": 31696.45,"March": 30149.84,"April": 9440.23,"May": 11276.65,"June": 23653.12,"July": 26761.87,"September": 11516.68}},{"country": "Kenya","distributor": "Transafrica","terms": "","raw": "Kenya - Transafrica","uncertain": false,"target": 27409.67,"booked": 13971.74,"q3": 20557.25,"plan26": 27000,"plan27": 30000,"y2024": 15957.24,"y2025": 26104.45,"budget": 1370.48,"months": {"March": 13971.74}}];
+const SHEET_EVENTS = [{"country": "UAE", "distributor": "Nobel Medical", "month": "January", "date": "2026-01-01", "dayKnown": false, "name": "AEEDC", "kind": "congress", "speaker": "", "rawNote": "AEEDC", "flag": "The sheet gives no day for AEEDC — month only."}, {"country": "KSA", "distributor": "", "month": "February", "date": "2026-02-05", "dayKnown": true, "name": "SIDC", "kind": "congress", "speaker": "", "rawNote": "SIDC 5th", "flag": ""}, {"country": "Qatar", "distributor": "Q BIOTECH", "month": "February", "date": "2026-02-07", "dayKnown": true, "name": "Visits", "kind": "visit", "speaker": "", "rawNote": "Visits, 7-8th", "flag": ""}, {"country": "Macedonia", "distributor": "VIK Dental", "month": "March", "date": "2026-03-28", "dayKnown": true, "name": "BRD", "kind": "BRD", "speaker": "Rakasevic", "rawNote": "BRD  28 March, Rakasevic", "flag": ""}, {"country": "Bulgaria", "distributor": "Ultradental", "month": "April", "date": "2026-04-24", "dayKnown": true, "name": "Steigmann", "kind": "unspecified", "speaker": "Steigmann", "rawNote": "Steigmann, 24 April", "flag": "The cell names a speaker and a date but not the event type."}, {"country": "UK", "distributor": "megagen", "month": "June", "date": "2026-06-19", "dayKnown": true, "name": "Hassan", "kind": "unspecified", "speaker": "Hassan", "rawNote": "19/20th Hassan", "flag": "The cell names a speaker and dates but not the event type."}, {"country": "Kuwait", "distributor": "RoyalPedia", "month": "September", "date": "2026-09-25", "dayKnown": true, "name": "BRD", "kind": "BRD", "speaker": "Kloss", "rawNote": "BRD 25th, Kloss", "flag": ""}, {"country": "Qatar", "distributor": "Q BIOTECH", "month": "October", "date": "2026-10-08", "dayKnown": true, "name": "BRD", "kind": "BRD", "speaker": "Hassan", "rawNote": "BRD 8th, Hassan", "flag": ""}, {"country": "Jordan", "distributor": "Khoury Dental", "month": "October", "date": "2026-10-20", "dayKnown": true, "name": "BRD", "kind": "BRD", "speaker": "Ciazzo", "rawNote": "BRD 20 Oct, Ciazzo", "flag": ""}, {"country": "Egypt", "distributor": "ALLAM", "month": "November", "date": "2026-11-03", "dayKnown": true, "name": "AIDC 2026", "kind": "congress", "speaker": "Robles", "rawNote": "3rd,  AIDC 2026  Robles", "flag": ""}, {"country": "UK", "distributor": "megagen", "month": "November", "date": "2026-11-06", "dayKnown": true, "name": "BAIRD", "kind": "congress", "speaker": "", "rawNote": "6-7th BAIRD", "flag": ""}, {"country": "UAE", "distributor": "Nobel Medical", "month": "November", "date": "2026-11-13", "dayKnown": true, "name": "CAPP + BRD", "kind": "BRD", "speaker": "Tabanella (CAPP), Steigmann (BRD)", "rawNote": "13/14th CAPP Tabanella, BRD Steigmann", "flag": "One cell holds two events — CAPP with Tabanella and a BRD with Steigmann. Confirm whether the BRD shares the 13/14th dates, then split them."}, {"country": "Lebanon", "distributor": "DMS", "month": "December", "date": "2026-12-12", "dayKnown": true, "name": "BRD", "kind": "BRD", "speaker": "Dragana", "rawNote": "BRD 12th. Dragana", "flag": ""}, {"country": "Macedonia", "distributor": "VIK Dental", "month": "December", "date": "2026-12-18", "dayKnown": true, "name": "BRD", "kind": "BRD", "speaker": "Sculean", "rawNote": "BRD 18th, Sculean", "flag": ""}];
+const SHEET_VIP = {"month": "September", "rawNote": "VIP event mix/24 rooms", "roomsBooked": 24, "rooms": [{"country": "Bulgaria", "label": "BG", "n": 3}, {"country": "Lebanon", "label": "Lebanon", "n": 3}, {"country": "Jordan", "label": "Jordan", "n": 2}, {"country": "UK", "label": "UK", "n": 11}, {"country": "UAE", "label": "UAE", "n": 2}, {"country": "Qatar", "label": "Qatar", "n": 3}, {"country": "Macedonia", "label": "MKD", "n": 2}], "roomsAllocated": 26};
+
+const SHEET_LOADED = "2026-09-10";   /* the day the export was handed over */
+
+/* =====================================================================
+   2. THE RULES — from the daily status check-in.
+      · gap = Q3 target - booked. Positive = behind pace.
+      · target 0 AND booked 0 = "no active target this year": its own
+        group at the bottom, never interleaved.
+      · Main list alphabetical by country; "needs attention" ranks only
+        behind-pace rows, by absolute euro gap.
+      · A "?" in a name means the name is unconfirmed in the sheet. It
+        is carried over exactly, never resolved by guessing.
+      · Every event gets the same five readiness lines, same order,
+        even when all five read "no update yet".
+      · Nothing is guessed. Unreported = "no update yet".
    ===================================================================== */
 
 const READY_ITEMS = [
@@ -475,20 +472,139 @@ const READY_ITEMS = [
 ];
 
 const STATUSES = [
-  { key:"no_update", label:"no update yet", tone:"idle" },
-  { key:"not_done",  label:"not done",      tone:"behind" },
-  { key:"progress",  label:"in progress",   tone:"waiting" },
-  { key:"done",      label:"done",          tone:"done" }
+  { key:"no_update", label:"no update yet" },
+  { key:"not_done",  label:"not done" },
+  { key:"progress",  label:"in progress" },
+  { key:"done",      label:"done" }
 ];
 const statusLabel = k => (STATUSES.find(s => s.key === k) || STATUSES[0]).label;
-const statusTone  = k => (STATUSES.find(s => s.key === k) || STATUSES[0]).tone;
 
 const BRAND = "biomaterials & REGENERATION DAYS";
-/* "REGENERATION DAY" not followed by an S is the recurring flyer error. */
 const brandSlip = s => /regeneration\s+day(?!s)\b/i.test(String(s || ""));
 
 /* =====================================================================
-   2. STATE
+   3. THE CHECKLIST — the BRD event checklist, field for field.
+      The source document colours its fields: partners fill the green
+      ones, speakers the red ones. A third set is what botiss provides.
+   ===================================================================== */
+
+const CAMPUS_TAGS = {
+  products: ["cerabone®","cerabone® plus","maxresorb®","maxgraft® granules","maxgraft® blocks",
+    "maxgraft® bonebuilder","maxgraft® cortico","NOVAMag® fixation screw","NOVAMag® membrane",
+    "Jason® membrane","collprotect® membrane","mucoderm®","collacone®","collafleece®","permamem®"],
+  indications: ["Sinus Lift","Ridge augmentation / reconstruction","Periodontal bone defects",
+    "Socket management","Soft tissue management"]
+};
+const TAG_CAP = 4;
+
+const TIMETABLE = [
+  { t:"09:00–10:30", kind:"slot",  key:"lecture1", label:"Lecture" },
+  { t:"10:30–11:00", kind:"break", label:"Coffee break" },
+  { t:"11:00–12:30", kind:"slot",  key:"lecture2", label:"Lecture" },
+  { t:"12:30–13:30", kind:"break", label:"Lunch break" },
+  { t:"13:30–15:00", kind:"slot",  key:"lecture3", label:"Lecture or hands-on" },
+  { t:"15:00–15:30", kind:"break", label:"Coffee break" },
+  { t:"15:30–17:30", kind:"slot",  key:"handson",  label:"Hands-on" }
+];
+
+const CHECKLIST = [
+  { id:"basics", title:"The event", items:[
+    { id:"title", label:"Title of the event", type:"fixed", value:BRAND, owner:"botiss",
+      hint:"Fixed. The brand reads “" + BRAND + "” — never “DAY”." },
+    { id:"town", label:"Town, country", type:"text", owner:"partner", required:true },
+    { id:"venue", label:"Venue", type:"textarea", owner:"partner", required:true,
+      hint:"Full name and address, each part of the address on its own line — hotel name, then street and number, then postal code and town." },
+    { id:"participants", label:"Expected number of participants", type:"text", owner:"partner", required:true,
+      hint:"Under 25 for hands-on. Over 50 for lectures, preferably 100." },
+    { id:"contact", label:"Contact & registration", type:"textarea", owner:"partner", required:true,
+      hint:"Company, name, phone, mail." },
+    { id:"logo", label:"Partner logo received", type:"check", owner:"partner", required:true,
+      hint:"High resolution." },
+    { id:"fee", label:"Fee", type:"text", owner:"partner", required:true,
+      hint:"Correct amount and currency. A BRD always shows a fee on the flyer; free seats are decided afterwards." }
+  ]},
+  { id:"marketing", title:"Marketing", items:[
+    { id:"materials", label:"Marketing materials ordered", type:"check", owner:"partner", required:true,
+      hint:"Check the material list at botiss.com/pdf/marketingmaterial_botiss.pdf and contact marketing@botiss.com for details." },
+    { id:"flyer", label:"Flyer made and checked with botiss", type:"check", owner:"partner", required:true,
+      hint:"The partner makes the flyer. The event brand must read “" + BRAND + "”, not “DAY”. Check with botiss before using it." },
+    { id:"certs", label:"Attendance certificates", type:"check", owner:"botiss", required:true,
+      hint:"botiss provides them: an editable PDF the partner fills the names into. Signed by the BRD president, not the speakers." },
+    { id:"social", label:"botiss social media post", type:"check", owner:"botiss", required:true,
+      hint:"botiss posts on its website, Instagram, Facebook and LinkedIn." }
+  ]},
+  { id:"timetable", title:"Timetable", items:[
+    { id:"timetable", label:"The day", type:"timetable", owner:"speaker", required:true,
+      hint:"The fixed BRD shape. Name what fills each teaching slot." }
+  ]},
+  { id:"programme", title:"Programme for the flyer", items:[
+    { id:"speakers", label:"Speakers", type:"speakers", owner:"speaker", required:true,
+      hint:"One block per speaker — add as many as the day has." }
+  ]},
+  { id:"tags", title:"botissCAMPUS tags", items:[
+    { id:"tags", label:"Most relevant tags", type:"tags", owner:"botiss", required:true,
+      hint:"Four at most, products and indications together." }
+  ]},
+  { id:"products", title:"Equipment — botiss products", items:[
+    { id:"p_cerabone", label:"0,5 cc cerabone®", type:"checkqty", owner:"speaker",
+      hint:"Which granule size, small or big? How many per person?" },
+    { id:"p_cerabone_plus", label:"1 cc cerabone® plus", type:"checkqty", owner:"speaker",
+      hint:"Which granule size, small or big? How many per person?" },
+    { id:"p_mucoderm", label:"15×20 mucoderm®", type:"checkqty", owner:"speaker", hint:"How many per person?" },
+    { id:"p_jason", label:"15×20 Jason® membrane", type:"checkqty", owner:"speaker", hint:"How many per person?" },
+    { id:"p_collprotect", label:"15×20 collprotect® membrane", type:"checkqty", owner:"speaker", hint:"How many per person?" },
+    { id:"p_permamem", label:"15×20 permamem®", type:"checkqty", owner:"speaker", hint:"How many per person?" },
+    { id:"p_novamag_mem", label:"15×20 NOVAMag® membrane", type:"checkqty", owner:"speaker", hint:"How many per person?" },
+    { id:"p_novamag_shield", label:"NOVAMag® SHIELD", type:"checkqty", owner:"speaker", hint:"How many per person?" },
+    { id:"p_collacone", label:"collacone®", type:"checkqty", owner:"speaker", hint:"How many per person?" },
+    { id:"p_collafleece", label:"collafleece®", type:"checkqty", owner:"speaker", hint:"How many per person?" },
+    { id:"p_grafter", label:"botiss grafter", type:"checkqty", owner:"speaker", required:true,
+      hint:"Obligatory at every hands-on. How many per person? Demonstration: youtube.com/watch?v=aRsAZHgunNI" }
+  ]},
+  { id:"instruments", title:"Equipment — instruments", items:[
+    { id:"i_set", label:"Instrument set", type:"checkset", owner:"speaker", required:true,
+      hint:"Tick the pieces the exercise needs.",
+      subs:["scalpel handle, 15 cm, round, shaped","periosteal elevator, 17,5 cm, curved",
+        "parodontometer, CP15","micro needle holder, 18 cm, curved, TC",
+        "SC suture / gum scissors, 11,5 cm, curved, super cut","desmotone, straight",
+        "periosteal elevator, 17,5 cm","filling spatula, size 1, rigid, double ended",
+        "tissue forceps, 17,5 cm, straight","tunneling instrument, 17,5 cm","plugger, size 2/3",
+        "dissecting forceps, 18 cm, cross-serrated"] },
+    { id:"i_micro", label:"Other microsurgical instruments", type:"checkqty", owner:"speaker",
+      hint:"Name them and say how many per person." },
+    { id:"i_blades", label:"Surgical blades", type:"checkqty", owner:"speaker",
+      hint:"Which size? How many per person?" },
+    { id:"i_other", label:"Other instruments", type:"checkqty", owner:"speaker",
+      hint:"Anything not listed above." }
+  ]},
+  { id:"animal", title:"Equipment — animal products", items:[
+    { id:"a_jaws", label:"Animal jaws with intact soft tissue and skin", type:"checkqty", owner:"speaker",
+      hint:"How many per person? Say whether mandible or maxilla." }
+  ]},
+  { id:"consumables", title:"Equipment — medical consumables", items:[
+    { id:"c_suture", label:"Surgical suture material", type:"checkset", owner:"speaker",
+      hint:"Tick the sizes needed, then name the preferred material below.",
+      subs:["6/0","6/0 or 5/0","5/0","4/0"] },
+    { id:"c_suture_pref", label:"Preferred suture material", type:"text", owner:"speaker",
+      hint:"Material, needle shape and anything else that matters." },
+    { id:"c_dressing", label:"Dressing sets", type:"checkset", owner:"speaker",
+      hint:"Tick what each participant needs.",
+      subs:["surgical face mask","surgical round cap","gown","gloves","surgical drape"] },
+    { id:"c_other", label:"Other consumables", type:"checkqty", owner:"speaker",
+      hint:"Anything not listed above." }
+  ]},
+  { id:"format", title:"Hands-on format — read before planning", items:[
+    { id:"f_videos", label:"Hands-on videos prepared", type:"check", owner:"speaker", required:true,
+      hint:"A BRD is exclusively hands-on: the speaker shows a video and explains what to do in 15 minutes, then participants start while the speaker goes round to check them. One exercise is limited to one hour." },
+    { id:"f_camera", label:"No live-feed camera is provided — planned around", type:"check", owner:"speaker", required:true,
+      hint:"Nothing at the venue films the demonstration; the video carries it." }
+  ]}
+];
+
+const OWNERS = { partner:"Partner", speaker:"Speaker", botiss:"botiss" };
+
+/* =====================================================================
+   4. STATE
    ===================================================================== */
 
 const uid = () => Math.random().toString(36).slice(2, 9);
@@ -498,67 +614,51 @@ const todayISO = () => {
           String(d.getDate()).padStart(2, "0")].join("-");
 };
 
-/* Opens with plainly-marked example rows so the board shows what it does
-   on first look. Every one of them says "(example)" and the banner and
-   the report header both say so too — they are never presented as real
-   botiss figures. One row carries a "?" and two carry a €0/€0 target,
-   because those are the two cases with special handling. */
-function exampleState(){
-  const t = todayISO();
-  const plus = n => { const d = new Date(); d.setDate(d.getDate() + n);
-    return [d.getFullYear(), String(d.getMonth()+1).padStart(2,"0"),
-            String(d.getDate()).padStart(2,"0")].join("-"); };
+function seedState(){
   return {
-    v: 1,
-    example: true,
-    asOf: t,
+    v: 2,
+    source: "2026_plan.xlsx",
+    asOf: SHEET_LOADED,
     quarter: "Q3",
-    distributors: [
-      { id:uid(), country:"Austria",      name:"(example) Alpen Dental",        target:145000, booked:151200 },
-      { id:uid(), country:"Brazil",       name:"(example) Regenera LATAM",      target:210000, booked:132000 },
-      { id:uid(), country:"Egypt",        name:"(example) Nile Medical",        target:0,      booked:0      },
-      { id:uid(), country:"Italy",        name:"(example) Dental Distribuzione",target:180000, booked:96500  },
-      { id:uid(), country:"Poland",       name:"(example) Implantmed Polska",   target:98000,  booked:104300 },
-      { id:uid(), country:"Spain",        name:"(example) Ibérica Regen",       target:120000, booked:88400  },
-      { id:uid(), country:"South Korea",  name:"(example) Hanyang Bio",         target:0,      booked:0      },
-      { id:uid(), country:"Türkiye",      name:"(example) Anka Dental?",        target:76000,  booked:59900  }
-    ],
-    approvals: [
-      { id:uid(), ref:"(example) PO-4471 — Dental Distribuzione", received:plus(-3), note:"cerabone 1.0 cc ×40, awaiting ok to customer service", done:false },
-      { id:uid(), ref:"(example) PO-4482 — Ibérica Regen",        received:plus(-1), note:"maxgraft granules, price check requested", done:false }
-    ],
+    distributors: SHEET_DISTRIBUTORS.map(d => ({ id:uid(), ...d })),
+    approvals: [],
     approvalsCheckedOn: null,
-    events: [
-      { id:uid(), name:"(example) BRD Milan", date:plus(22), speaker:"", partner:"",
-        status:{ travel:"done", samples:"progress", materials:"not_done", social:"no_update", certs:"no_update" } },
-      { id:uid(), name:"(example) biomaterials & REGENERATION DAY Warsaw", date:plus(49), speaker:"", partner:"",
-        status:{ travel:"no_update", samples:"no_update", materials:"no_update", social:"no_update", certs:"no_update" } }
-    ],
+    events: SHEET_EVENTS.map(e => ({
+      id:uid(), ...e,
+      status:{ travel:"no_update", samples:"no_update", materials:"no_update",
+               social:"no_update", certs:"no_update" }
+    })),
+    vip: SHEET_VIP,
+    checklists: {},
+    showPast: false,
     updatedAt: new Date().toISOString()
   };
 }
 
-let S = loadLocal() || exampleState();
-let dbRef = null;              // db document reference once available
-let storeMode = "local";       // "local" | "shared"
+let S = loadLocal();
+if (!S || S.v !== 2) S = seedState();
+if (!S.checklists) S.checklists = {};
+
+let dbRef = null;
+let storeMode = "local";
 let tab = "targets";
 let editRows = false;
-let mapper = null;             // pending import awaiting column mapping
+let mapper = null;
+let clEvent = null;
+let clOpen = { basics:true };
 
-const LS_KEY = "botiss-daily-desk-v1";
+const LS_KEY = "botiss-daily-desk-v2";
 function loadLocal(){
   try { const raw = localStorage.getItem(LS_KEY); return raw ? JSON.parse(raw) : null; }
   catch(e){ return null; }
 }
-function saveLocal(){
-  try { localStorage.setItem(LS_KEY, JSON.stringify(S)); } catch(e){}
-}
+function saveLocal(){ try { localStorage.setItem(LS_KEY, JSON.stringify(S)); } catch(e){} }
 
 let saveTimer = null;
-function commit(){
+function commit(rerender){
   S.updatedAt = new Date().toISOString();
   saveLocal();
-  render();
+  if (rerender !== false) render();
   if (!dbRef) return;
   clearTimeout(saveTimer);
   saveTimer = setTimeout(() => {
@@ -573,39 +673,43 @@ function commit(){
         toast("Could not save to the shared store. Kept on this device.");
       }
     });
-  }, 350);
+  }, 400);
 }
 
 /* =====================================================================
-   3. DERIVED NUMBERS
+   5. DERIVED NUMBERS
    ===================================================================== */
 
 const num = v => { const n = Number(v); return Number.isFinite(n) ? n : 0; };
 const eur = n => "€" + Math.round(n).toLocaleString("en-US");
+const eur0 = n => Math.round(n).toLocaleString("en-US");
 const pct = (part, whole) => whole > 0 ? Math.round(Math.abs(part) / whole * 100) : 0;
+const MONTHS = ["January","February","March","April","May","June",
+                "July","August","September","October","November","December"];
+const MON3 = ["J","F","M","A","M","J","J","A","S","O","N","D"];
 
-function isDormant(d){ return num(d.target) === 0 && num(d.booked) === 0; }
+function fullName(d){
+  const nm = d.distributor && String(d.distributor).trim()
+    ? d.distributor + (d.uncertain ? "?" : "")
+    : "(distributor not named in the sheet)";
+  return d.country + " — " + nm;
+}
+const isDormant = d => num(d.q3) === 0 && num(d.booked) === 0;
 
 function paced(){
   return S.distributors.map(d => {
-    const target = num(d.target), booked = num(d.booked);
-    const gap = target - booked;              // + = behind pace
-    return {
-      ...d, target, booked, gap,
-      surplus: -gap,                          // + = ahead, for the chart
-      pct: pct(gap, target),
-      dormant: isDormant(d),
-      unconfirmed: String(d.name || "").includes("?")
-    };
+    const q3 = num(d.q3), booked = num(d.booked);
+    const gap = q3 - booked;
+    return { ...d, q3, booked, gap, surplus: -gap, pct: pct(gap, q3),
+             dormant: isDormant(d), label: fullName(d) };
   });
 }
 const byCountry = (a, b) =>
-  String(a.country||"").localeCompare(String(b.country||""), "en", { sensitivity:"base" }) ||
-  String(a.name||"").localeCompare(String(b.name||""), "en", { sensitivity:"base" });
+  String(a.country||"").localeCompare(String(b.country||""), "en", { sensitivity:"base" });
 
-function activeRows(){ return paced().filter(d => !d.dormant).sort(byCountry); }
-function dormantRows(){ return paced().filter(d => d.dormant).sort(byCountry); }
-function attentionRows(){ return paced().filter(d => !d.dormant && d.gap > 0).sort((a,b) => b.gap - a.gap); }
+const activeRows    = () => paced().filter(d => !d.dormant).sort(byCountry);
+const dormantRows   = () => paced().filter(d =>  d.dormant).sort(byCountry);
+const attentionRows = () => paced().filter(d => !d.dormant && d.gap > 0).sort((a,b) => b.gap - a.gap);
 
 function openApprovals(){
   return S.approvals.filter(a => !a.done)
@@ -622,17 +726,20 @@ function daysAway(iso){
   if (!Number.isFinite(b)) return null;
   return Math.round((b - a) / 86400000);
 }
-function sortedEvents(){
-  return S.events.slice().sort((a, b) => String(a.date||"").localeCompare(String(b.date||"")));
-}
+const sortedEvents   = () => S.events.slice()
+  .sort((a, b) => String(a.date||"").localeCompare(String(b.date||"")));
+const upcomingEvents = () => sortedEvents().filter(e => { const a = daysAway(e.date); return a !== null && a >= 0; });
+const pastEvents     = () => sortedEvents().filter(e => { const a = daysAway(e.date); return a !== null && a <  0; });
+
 function eventOpenCount(){
   let n = 0;
-  S.events.forEach(e => READY_ITEMS.forEach(it => {
-    const st = (e.status || {})[it.key] || "no_update";
-    if (st !== "done") n++;
+  upcomingEvents().forEach(e => READY_ITEMS.forEach(it => {
+    if (((e.status || {})[it.key] || "no_update") !== "done") n++;
   }));
   return n;
 }
+const eventTitle = e =>
+  (e.distributor ? e.country + " — " + e.distributor : e.country) + " · " + e.name;
 
 const fmtDate = iso => {
   const t = Date.parse(iso + "T00:00:00");
@@ -644,44 +751,95 @@ const fmtDateShort = iso => {
   if (!Number.isFinite(t)) return iso || "—";
   return new Date(t).toLocaleDateString("en-GB", { day:"numeric", month:"short", year:"numeric" });
 };
+function awayText(iso, dayKnown){
+  const a = daysAway(iso);
+  if (a === null) return "date not set";
+  const base = a === 0 ? "today"
+    : a > 0 ? a + (a === 1 ? " day away" : " days away")
+    : Math.abs(a) + (Math.abs(a) === 1 ? " day ago" : " days ago");
+  return dayKnown === false ? base + ", day not given in the sheet" : base;
+}
+
+/* ---------- checklist progress ---------- */
+
+function clFor(eventId){
+  if (!S.checklists[eventId]) S.checklists[eventId] = { values:{}, tags:[], tt:{}, speakers:[] };
+  const c = S.checklists[eventId];
+  if (!c.values) c.values = {};
+  if (!c.tags) c.tags = [];
+  if (!c.tt) c.tt = {};
+  if (!c.speakers) c.speakers = [];
+  return c;
+}
+function itemAnswered(item, c){
+  const v = c.values[item.id];
+  switch (item.type) {
+    case "fixed":     return true;
+    case "check":
+    case "checkqty":  return v === true;
+    case "checkset":  return Array.isArray(v) && v.length > 0;
+    case "tags":      return c.tags.length > 0;
+    case "timetable": return TIMETABLE.filter(r => r.kind === "slot")
+                        .every(r => String(c.tt[r.key] || "").trim() !== "");
+    case "speakers":  return c.speakers.length > 0 &&
+                        c.speakers.every(s => String(s.title||"").trim() && String(s.name||"").trim());
+    default:          return typeof v === "string" && v.trim() !== "";
+  }
+}
+const REQUIRED = [];
+CHECKLIST.forEach(sec => sec.items.forEach(it => { if (it.required) REQUIRED.push(it); }));
+
+function clProgress(eventId){
+  const c = clFor(eventId);
+  const byOwner = { partner:[0,0], speaker:[0,0], botiss:[0,0] };
+  let done = 0;
+  REQUIRED.forEach(it => {
+    const o = byOwner[it.owner] || byOwner.botiss;
+    o[1]++;
+    if (itemAnswered(it, c)) { o[0]++; done++; }
+  });
+  return { done, total:REQUIRED.length, byOwner,
+           pct: REQUIRED.length ? Math.round(done / REQUIRED.length * 100) : 0 };
+}
+function openFieldsFor(eventId, owner){
+  const c = clFor(eventId), out = [];
+  CHECKLIST.forEach(sec => sec.items.forEach(it => {
+    if (it.owner !== owner || it.type === "fixed") return;
+    if (itemAnswered(it, c)) return;
+    out.push({ sec:sec.title, item:it });
+  }));
+  return out;
+}
 
 /* =====================================================================
-   4. THE REPORT — the fixed shape, generated from the same numbers the
-      board shows. This is the thing that gets sent.
+   6. THE REPORT — the fixed shape, from the same numbers as the board.
    ===================================================================== */
 
 function buildReport(){
   const L = [];
-  const stamp = S.example ? "DAILY STATUS — " + fmtDate(todayISO()) + "   [EXAMPLE DATA — NOT REAL FIGURES]"
-                          : "DAILY STATUS — " + fmtDate(todayISO());
-  L.push(stamp, "");
+  const Q = S.quarter || "Q3";
+  L.push("DAILY STATUS — " + fmtDate(todayISO()), "");
 
   const act = activeRows(), dor = dormantRows();
-  L.push("DISTRIBUTOR TARGETS (" + (S.quarter || "Q3") + " pace) — sorted by country, A→Z");
-  if (!act.length) {
-    L.push("- no distributor export loaded yet");
-  } else {
-    act.forEach(d => {
-      const dir = d.gap > 0 ? "BEHIND" : d.gap < 0 ? "AHEAD" : "ON PACE";
-      const tail = d.gap === 0 ? "on pace"
-        : eur(Math.abs(d.gap)) + " " + dir + " (" + d.pct + "%)";
-      L.push("- " + d.country + " — " + d.name +
-             "  " + (S.quarter || "Q3") + " target: " + eur(d.target) +
-             " | booked: " + eur(d.booked) + " | " + tail);
-    });
-  }
+  L.push("DISTRIBUTOR TARGETS (" + Q + " pace) — sorted by country, A→Z");
+  if (!act.length) L.push("- no distributor export loaded yet");
+  else act.forEach(d => {
+    const dir = d.gap > 0 ? "BEHIND" : d.gap < 0 ? "AHEAD" : "ON PACE";
+    const tail = d.gap === 0 ? "on pace" : eur(Math.abs(d.gap)) + " " + dir + " (" + d.pct + "%)";
+    L.push("- " + d.label + "  " + Q + " target: " + eur(d.q3) +
+           " | booked: " + eur(d.booked) + " | " + tail);
+  });
   L.push("");
 
-  L.push("NEEDS ATTENTION (largest shortfalls vs. " + (S.quarter || "Q3") + " pace)");
+  L.push("NEEDS ATTENTION (largest shortfalls vs. " + Q + " pace)");
   const att = attentionRows();
   if (!att.length) L.push("- none behind pace");
-  else att.forEach(d => L.push("- " + d.country + " — " + d.name + ": " +
-                               eur(d.gap) + " behind (" + d.pct + "%)"));
+  else att.forEach(d => L.push("- " + d.label + ": " + eur(d.gap) + " behind (" + d.pct + "%)"));
   L.push("");
 
   L.push("NO ACTIVE TARGET THIS YEAR");
   if (!dor.length) L.push("- none");
-  else dor.forEach(d => L.push("- " + d.country + " — " + d.name));
+  else dor.forEach(d => L.push("- " + d.label));
   L.push("");
 
   L.push("PENDING ORDER APPROVALS");
@@ -692,36 +850,52 @@ function buildReport(){
                     : "(needs today's email input — no data given yet)");
   } else {
     open.forEach(a => L.push("- " + a.ref + " — waiting " + a.days +
-                             (a.days === 1 ? " day" : " days") +
-                             (a.note ? " · " + a.note : "")));
+      (a.days === 1 ? " day" : " days") + (a.note ? " · " + a.note : "")));
     if (!reviewed) L.push("(today's email input not given yet — this list may be incomplete)");
   }
   L.push("");
 
   L.push("EVENT READINESS — sorted by date, soonest first");
-  const evs = sortedEvents();
-  if (!evs.length) {
-    L.push("- no events entered");
-  } else {
-    evs.forEach((e, i) => {
-      const away = daysAway(e.date);
-      const awayTxt = away === null ? "date not set"
-        : away === 0 ? "today"
-        : away > 0 ? away + (away === 1 ? " day away" : " days away")
-        : Math.abs(away) + (Math.abs(away) === 1 ? " day ago" : " days ago");
-      L.push(e.name + " — " + fmtDate(e.date) + " (" + awayTxt + ") — Speaker: " +
-             (e.speaker ? e.speaker : "no update yet"));
-      READY_ITEMS.forEach(it =>
-        L.push("- " + it.name + ": " + statusLabel((e.status || {})[it.key] || "no_update")));
-      if (brandSlip(e.name)) L.push("  ! event brand reads “DAY” — must read “" + BRAND + "”");
-      if (i < evs.length - 1) L.push("");
-    });
+  const evs = upcomingEvents();
+  if (!evs.length) L.push("- no upcoming events");
+  else evs.forEach((e, i) => {
+    L.push(eventTitle(e) + " — " + fmtDate(e.date) + " (" + awayText(e.date, e.dayKnown) +
+           ") — Speaker: " + (e.speaker ? e.speaker : "no update yet"));
+    READY_ITEMS.forEach(it =>
+      L.push("- " + it.name + ": " + statusLabel((e.status || {})[it.key] || "no_update")));
+    if (S.checklists[e.id]) {
+      const p = clProgress(e.id);
+      if (p.done) L.push("  checklist: " + p.done + " of " + p.total + " required fields in");
+    }
+    if (brandSlip(e.name)) L.push("  ! event brand reads “DAY” — must read “" + BRAND + "”");
+    if (e.flag) L.push("  ! " + e.flag);
+    if (i < evs.length - 1) L.push("");
+  });
+  return L.join("\n");
+}
+
+function buildChaseNote(eventId, owner){
+  const e = S.events.find(x => x.id === eventId);
+  const fields = openFieldsFor(eventId, owner);
+  const L = [BRAND + " — " + eventTitle(e),
+             fmtDate(e.date) + " (" + awayText(e.date, e.dayKnown) + ")", ""];
+  if (!fields.length) {
+    L.push("Everything on the " + OWNERS[owner].toLowerCase() + " side is in. Nothing outstanding.");
+    return L.join("\n");
   }
+  L.push("Still open on the " + OWNERS[owner].toLowerCase() + " side — " + fields.length +
+         (fields.length === 1 ? " item:" : " items:"));
+  let sec = "";
+  fields.forEach(f => {
+    if (f.sec !== sec) { sec = f.sec; L.push("", sec.toUpperCase()); }
+    L.push("- " + f.item.label);
+    if (f.item.hint) L.push("    " + f.item.hint);
+  });
   return L.join("\n");
 }
 
 /* =====================================================================
-   5. RENDER
+   7. RENDER
    ===================================================================== */
 
 const esc = s => String(s == null ? "" : s)
@@ -736,24 +910,29 @@ const ICON = {
   plus:'<svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>',
   check:'<svg viewBox="0 0 24 24"><path d="M4 12.5 9 17.5 20 6.5"/></svg>',
   trash:'<svg viewBox="0 0 24 24"><path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13"/></svg>',
-  up:'<svg viewBox="0 0 24 24"><path d="M12 20V9m0 0 4 4m-4-4-8 4M12 9 4 13"/></svg>'
+  up:'<svg viewBox="0 0 24 24"><path d="M12 20V9m0 0 4 4m-4-4-8 4M12 9 4 13"/></svg>',
+  caret:'<svg viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></svg>'
 };
 
 const TABS = [
   { key:"targets",   label:"Targets" },
   { key:"approvals", label:"Approvals" },
   { key:"events",    label:"Events" },
+  { key:"checklist", label:"Checklist" },
   { key:"report",    label:"Report" }
 ];
 
 function renderTabs(){
-  const att = attentionRows().length;
-  const open = openApprovals().length;
-  const evOpen = eventOpenCount();
-  const counts = { targets:[att,"hot"], approvals:[open,"warm"], events:[evOpen,"warm"], report:[null,""] };
+  const counts = {
+    targets:[attentionRows().length,"hot"],
+    approvals:[openApprovals().length,"warm"],
+    events:[eventOpenCount(),"warm"],
+    checklist:[null,""],
+    report:[null,""]
+  };
   document.getElementById("tabs").innerHTML = TABS.map(t => {
-    const [n, tone] = counts[t.key];
-    const badge = n ? '<span class="count ' + tone + '">' + n + "</span>" : "";
+    const c = counts[t.key];
+    const badge = c[0] ? '<span class="count ' + c[1] + '">' + c[0] + "</span>" : "";
     return '<button class="tab" role="tab" id="tab-' + t.key + '" data-tab="' + t.key +
       '" aria-selected="' + (tab === t.key) + '">' + t.label + badge + "</button>";
   }).join("");
@@ -770,15 +949,6 @@ function renderStorePill(){
   }
 }
 
-function exampleBanner(){
-  if (!S.example) return "";
-  return '<div class="notice">' + ICON.warn + '<div class="nbody">' +
-    '<strong>Example rows, not your figures.</strong> Every distributor, order and event below is marked “(example)” ' +
-    'so nothing here can be mistaken for real botiss data. Load your export on the Targets tab, then clear these.' +
-    '<div><button class="btn sm" id="clearExample">Clear example data</button></div>' +
-    "</div></div>";
-}
-
 function render(){
   renderTabs();
   const v = document.getElementById("view");
@@ -787,50 +957,76 @@ function render(){
   if (tab === "targets")   v.innerHTML = viewTargets();
   if (tab === "approvals") v.innerHTML = viewApprovals();
   if (tab === "events")    v.innerHTML = viewEvents();
+  if (tab === "checklist") v.innerHTML = viewChecklist();
   if (tab === "report")    v.innerHTML = viewReport();
-  if (tab === "targets")   wirePaceTips();
+  if (tab === "targets")   { wireTips("paceTip", ".pacerow", "tip"); wireTips("heatTip", ".cell", "heat"); }
 }
 
 /* ---------- Targets ---------- */
 
 function viewTargets(){
   const act = activeRows(), dor = dormantRows(), att = attentionRows();
-  const totTarget = act.reduce((s, d) => s + d.target, 0);
+  const totQ3 = act.reduce((s, d) => s + d.q3, 0);
   const totBooked = act.reduce((s, d) => s + d.booked, 0);
-  const net = totTarget - totBooked;
+  const totTarget = act.reduce((s, d) => s + num(d.target), 0);
+  const net = totQ3 - totBooked;
+  const budget = S.distributors.reduce((s, d) => s + num(d.budget), 0);
 
   const figs =
     '<div class="figs">' +
-      '<div class="fig"><div class="v num">' + eur(totTarget) + '</div>' +
-        '<div class="k">' + esc(S.quarter || "Q3") + ' target, active distributors</div>' +
-        '<div class="s">' + act.length + ' with a target this year</div></div>' +
+      '<div class="fig"><div class="v num">' + eur(totQ3) + '</div>' +
+        '<div class="k">' + esc(S.quarter) + ' target, active distributors</div>' +
+        '<div class="s">' + act.length + ' of ' + S.distributors.length + ' carry a target</div></div>' +
       '<div class="fig"><div class="v num">' + eur(totBooked) + '</div>' +
         '<div class="k">Booked year to date</div>' +
-        '<div class="s">export dated ' + esc(fmtDateShort(S.asOf)) + '</div></div>' +
+        '<div class="s">' + pct(totBooked, totTarget) + '% of the ' + eur(totTarget) + ' full year</div></div>' +
       '<div class="fig ' + (net > 0 ? "behind" : net < 0 ? "ahead" : "") + '">' +
         '<div class="v num">' + (net === 0 ? "level" : eur(Math.abs(net))) + '</div>' +
         '<div class="k">' + (net > 0 ? "Behind pace, net" : net < 0 ? "Ahead of pace, net" : "On pace") + '</div>' +
-        '<div class="s">' + (totTarget ? pct(net, totTarget) + "% of target" : "no target loaded") + '</div></div>' +
+        '<div class="s">' + pct(net, totQ3) + '% of the ' + esc(S.quarter) + ' target</div></div>' +
       '<div class="fig ' + (att.length ? "behind" : "ahead") + '">' +
         '<div class="v num">' + att.length + ' of ' + act.length + '</div>' +
-        '<div class="k">Behind ' + esc(S.quarter || "Q3") + ' pace</div>' +
-        '<div class="s">' + (dor.length ? dor.length + " with no active target" : "all have a target") + '</div></div>' +
+        '<div class="k">Behind ' + esc(S.quarter) + ' pace</div>' +
+        '<div class="s">' + dor.length + ' with no active target</div></div>' +
+      '<div class="fig"><div class="v num">' + eur(budget) + '</div>' +
+        '<div class="k">Event budget, 5% of target</div>' +
+        '<div class="s">across all distributors</div></div>' +
     "</div>";
 
   return '<div class="stack">' +
-    exampleBanner() +
-    figs +
-    paceChart(act) +
-    attentionList(att) +
-    targetTable(act, dor) +
-    importPanel() +
+    sourceNote() + figs + paceChart(act) + attentionList(att) +
+    monthHeat() + targetTable(act, dor) + planNote() + importPanel() +
   "</div>";
+}
+
+function sourceNote(){
+  return '<div class="notice info">' + ICON.info + '<div class="nbody">' +
+    '<strong>Live from 2026_plan.xlsx</strong> — the “revenues” and “events” sheets, loaded ' +
+    esc(fmtDateShort(S.asOf)) + '. ' + esc(S.quarter) + ' target is the sheet’s own column ' +
+    '(full-year target ÷ 4 × 3); booked is its “2026” column, which already sums the monthly ' +
+    'cells including September. Nothing here is recomputed differently from the sheet.' +
+    "</div></div>";
+}
+
+function planNote(){
+  /* The workbook carries two target sets and they disagree. Say so rather than pick one. */
+  const diff = S.distributors.filter(d => num(d.plan26) > 0 &&
+    Math.abs(num(d.plan26) - num(d.target)) / num(d.plan26) > 0.05);
+  if (!diff.length) return "";
+  return '<div class="notice">' + ICON.warn + '<div class="nbody">' +
+    '<strong>Two target sets in the workbook disagree.</strong> The “2026 target” column that drives ' +
+    esc(S.quarter) + ' pace is last year × 1.05 for every distributor except Jordan, which is set to ' +
+    'its agreed plan instead. The table lower down the sheet holds the agreed 2026/2027 plan, and for ' +
+    diff.length + ' distributors the two differ by more than 5%: ' +
+    diff.map(d => esc(d.country) + " " + eur(num(d.target)) + " vs plan " + eur(num(d.plan26))).join(" · ") +
+    '. The board follows the pace column, as the check-in does. Both are in the table above.' +
+    "</div></div>";
 }
 
 function paceChart(rows){
   if (!rows.length) return "";
-  const sorted = rows.slice().sort((a, b) => a.surplus - b.surplus);  // worst first
-  const maxAbs = Math.max(...sorted.map(d => Math.abs(d.surplus)), 1);
+  const sorted = rows.slice().sort((a, b) => a.surplus - b.surplus);
+  const maxAbs = Math.max.apply(null, sorted.map(d => Math.abs(d.surplus)).concat([1]));
   const bars = sorted.map(d => {
     const w = Math.abs(d.surplus) / maxAbs * 50;
     const side = d.surplus < 0 ? "behind" : "ahead";
@@ -838,26 +1034,28 @@ function paceChart(rows){
       '<div class="bar ' + side + '" style="width:' + w.toFixed(2) + '%"></div>';
     const amt = d.surplus === 0 ? "on pace"
       : (d.surplus < 0 ? "−" : "+") + eur(Math.abs(d.surplus));
-    return '<div class="pacerow" data-tip="' + esc(
-        d.country + " — " + d.name + "|" +
-        (S.quarter||"Q3") + " target " + eur(d.target) + " · booked " + eur(d.booked) + "|" +
-        (d.gap > 0 ? eur(d.gap) + " behind (" + d.pct + "%)"
-         : d.gap < 0 ? eur(-d.gap) + " ahead (" + d.pct + "%)" : "level with target")
-      ) + '">' +
-      '<div class="who"><b>' + esc(d.country) + '</b> — ' + esc(d.name) + "</div>" +
+    const tipTxt = d.label + "|" + S.quarter + " target " + eur(d.q3) + " · booked " + eur(d.booked) +
+      "|" + (d.gap > 0 ? eur(d.gap) + " behind (" + d.pct + "%)"
+           : d.gap < 0 ? eur(-d.gap) + " ahead (" + d.pct + "%)" : "level with target");
+    return '<div class="pacerow" data-tip="' + esc(tipTxt) + '">' +
+      '<div class="who"><b>' + esc(d.country) + '</b> — ' +
+        esc(d.distributor || "not named") + "</div>" +
       '<div class="chartwrap-cell"><div class="track"><div class="zero"></div>' + bar + "</div></div>" +
-      '<div class="amt ' + (d.surplus < 0 ? "behind" : d.surplus > 0 ? "ahead" : "") + ' num">' + amt + "</div>" +
+      '<div class="amt ' + (d.surplus < 0 ? "behind" : d.surplus > 0 ? "ahead" : "") +
+        ' num">' + amt + "</div>" +
     "</div>";
   }).join("");
 
   return '<section class="sect"><div class="sect-head">' +
-    "<h2>Pace against the " + esc(S.quarter || "Q3") + " target</h2>" +
+    "<h2>Pace against the " + esc(S.quarter) + " target</h2>" +
     '<span class="hint">Booked minus target · worst at the top</span></div>' +
     '<div class="legend">' +
       '<span><i style="background:var(--behind)"></i>Behind pace</span>' +
       '<span><i style="background:var(--ahead)"></i>Ahead of pace</span>' +
-      '<span><i style="background:var(--rule)"></i>Target</span></div>' +
-    '<div class="chartwrap"><div class="pace">' + bars + "</div>" +
+      '<span><i style="background:var(--rule)"></i>Target</span>' +
+    "</div>" +
+    '<div class="chartwrap">' +
+      '<div class="pace">' + bars + "</div>" +
       '<div class="axis"><div class="scaleline"></div><div class="scale">' +
         "<span>−" + eur(maxAbs) + "</span><span>0</span><span>+" + eur(maxAbs) + "</span>" +
       "</div></div>" +
@@ -865,37 +1063,89 @@ function paceChart(rows){
     "</div></section>";
 }
 
-function wirePaceTips(){
-  const tip = document.getElementById("paceTip");
+function monthHeat(){
+  const rows = activeRows();
+  if (!rows.length) return "";
+  let max = 0;
+  rows.forEach(d => MONTHS.forEach(m => {
+    const v = num((d.months||{})[m]); if (v > max) max = v;
+  }));
+  if (max <= 0) max = 1;
+  const nowMonth = new Date().getMonth();
+
+  const head = '<div class="heatrow"><div class="hname label">Booked by month</div>' +
+    MON3.map((m, i) => '<div class="hm"' +
+      (i === nowMonth ? ' style="color:var(--marine);font-weight:500"' : "") + ">" + m + "</div>").join("") +
+    '<div class="htot label">Year</div></div>';
+
+  const body = rows.map(d => {
+    const cells = MONTHS.map((m, i) => {
+      const raw = (d.months||{})[m];
+      const has = raw !== undefined && raw !== null;
+      const v = num(raw);
+      const cls = "cell" + (i === nowMonth ? " now" : "") + (has && v < 0 ? " neg" : "");
+      /* Square-root shading: one very large month would otherwise flatten
+         every other cell to the same near-empty tint. */
+      const style = has && v >= 0
+        ? "background:color-mix(in srgb, var(--heat) " +
+          Math.max(16, Math.round(Math.sqrt(v / max) * 100)) + "%, var(--sunk))"
+        : "";
+      const tipTxt = d.label + "|" + m + "|" + (has ? eur(v) : "nothing booked");
+      return '<div class="' + cls + '" style="' + style + '" data-heat="' + esc(tipTxt) + '"></div>';
+    }).join("");
+    return '<div class="heatrow"><div class="hname">' + esc(d.country) + " — " +
+      esc(d.distributor || "not named") + "</div>" + cells +
+      '<div class="htot">' + eur0(d.booked) + "</div></div>";
+  }).join("");
+
+  return '<section class="sect"><div class="sect-head">' +
+    "<h2>Where the year has landed, month by month</h2>" +
+    '<span class="hint">September is outlined — the month still in progress · shading is square-root scaled</span></div>' +
+    '<div class="legend">' +
+      '<span><i style="background:var(--sunk)"></i>nothing booked</span>' +
+      '<span><i style="background:color-mix(in srgb, var(--heat) 45%, var(--sunk))"></i>smaller month</span>' +
+      '<span><i style="background:var(--heat)"></i>biggest month, ' + eur(max) + '</span>' +
+      '<span><i style="background:var(--behind-wash);box-shadow:inset 0 0 0 1px var(--behind)"></i>credit / negative</span>' +
+    "</div>" +
+    '<div class="chartwrap"><div class="heat">' + head + body + "</div>" +
+      '<div class="tip" id="heatTip"></div>' +
+    "</div></section>";
+}
+
+function wireTips(tipId, sel, dataKey){
+  const tip = document.getElementById(tipId);
   if (!tip) return;
   const wrap = tip.parentElement;
-  wrap.querySelectorAll(".pacerow").forEach(row => {
-    row.addEventListener("pointerenter", () => {
-      const parts = (row.dataset.tip || "").split("|");
-      tip.innerHTML = "<b>" + esc(parts[0]) + "</b><br><span class='num'>" +
-        esc(parts[1]) + "</span><br>" + esc(parts[2]);
-      const rr = row.getBoundingClientRect(), wr = wrap.getBoundingClientRect();
+  wrap.querySelectorAll(sel).forEach(node => {
+    node.addEventListener("pointerenter", () => {
+      const p = (node.dataset[dataKey] || "").split("|");
+      tip.innerHTML = "<b>" + esc(p[0]) + "</b><br>" +
+        (dataKey === "heat"
+          ? esc(p[1]) + ": <span class='num'>" + esc(p[2]) + "</span>"
+          : "<span class='num'>" + esc(p[1]) + "</span><br>" + esc(p[2]));
+      const rr = node.getBoundingClientRect(), wr = wrap.getBoundingClientRect();
       tip.style.left = Math.round(rr.left - wr.left + rr.width / 2) + "px";
       tip.style.top  = Math.round(rr.top - wr.top) + "px";
       tip.style.opacity = "1";
     });
-    row.addEventListener("pointerleave", () => { tip.style.opacity = "0"; });
+    node.addEventListener("pointerleave", () => { tip.style.opacity = "0"; });
   });
 }
 
 function attentionList(att){
   if (!att.length) {
     return '<section class="sect"><div class="sect-head"><h2>Needs attention</h2></div>' +
-      '<div class="empty">Nobody is behind ' + esc(S.quarter || "Q3") + ' pace.</div></section>';
+      '<div class="empty">Nobody is behind ' + esc(S.quarter) + ' pace.</div></section>';
   }
   return '<section class="sect"><div class="sect-head">' +
     "<h2>Needs attention</h2>" +
     '<span class="hint">Behind-pace only, ranked by euro shortfall</span></div>' +
     '<div class="rows">' + att.map(d =>
       '<div class="row attention"><div class="rail"></div><div class="rbody">' +
-        '<div class="rtitle">' + esc(d.country) + " — " + esc(d.name) + "</div>" +
-        '<div class="rmeta">target ' + eur(d.target) + " · booked " + eur(d.booked) +
-          (d.unconfirmed ? " · name unconfirmed in the export, carried over as written" : "") + "</div>" +
+        '<div class="rtitle">' + esc(d.label) + "</div>" +
+        '<div class="rmeta">' + esc(S.quarter) + " target " + eur(d.q3) + " · booked " + eur(d.booked) +
+          " · full year " + eur(num(d.target)) + (d.terms ? " · " + esc(d.terms) : "") +
+          (d.uncertain ? " · name unconfirmed in the sheet, carried over as written" : "") + "</div>" +
       "</div>" +
       '<div class="ract"><span class="chip behind">' + eur(d.gap) + " behind · " + d.pct + "%</span></div>" +
       "</div>").join("") +
@@ -903,48 +1153,65 @@ function attentionList(att){
 }
 
 function targetTable(act, dor){
-  const head = '<tr><th>Country</th><th>Distributor</th><th class="r">' +
-    esc(S.quarter || "Q3") + ' target</th><th class="r">Booked</th><th class="r">Pace</th><th></th></tr>';
+  const head = '<tr><th>Country</th><th>Distributor</th><th>Terms</th><th class="r">' +
+    esc(S.quarter) + ' target</th><th class="r">Booked</th><th class="r">Pace</th>' +
+    '<th class="r">2026 target</th><th class="r">2026 plan</th><th class="r">2027 plan</th>' +
+    '<th class="r">5% events</th><th></th></tr>';
 
   const rowFor = d => {
     if (editRows) {
-      return "<tr><td>" +
-        '<input aria-label="Country" data-edit="country" data-id="' + d.id + '" value="' + esc(d.country) + '"></td>' +
-        '<td><input aria-label="Distributor" data-edit="name" data-id="' + d.id + '" value="' + esc(d.name) + '"></td>' +
-        '<td class="r"><input class="money" aria-label="Target" data-edit="target" data-id="' + d.id + '" value="' + d.target + '"></td>' +
-        '<td class="r"><input class="money" aria-label="Booked" data-edit="booked" data-id="' + d.id + '" value="' + d.booked + '"></td>' +
-        '<td class="r n">—</td>' +
-        '<td class="r"><button class="btn quiet" data-del-dist="' + d.id + '" title="Remove ' + esc(d.name) + '" aria-label="Remove ' + esc(d.name) + '">' + ICON.trash + "</button></td></tr>";
+      const f = (k, lab) => '<input class="' + (["q3","booked","target","plan26","plan27"].includes(k) ? "money" : "") +
+        '" aria-label="' + lab + '" data-edit="' + k + '" data-id="' + d.id + '" value="' +
+        esc(["q3","booked","target","plan26","plan27"].includes(k) ? num(d[k]) : (d[k] || "")) + '">';
+      return "<tr><td>" + f("country","Country") + "</td><td>" + f("distributor","Distributor") +
+        "</td><td>" + f("terms","Terms") +
+        '</td><td class="r">' + f("q3","Q3 target") +
+        '</td><td class="r">' + f("booked","Booked") +
+        '</td><td class="r n">—</td><td class="r">' + f("target","2026 target") +
+        '</td><td class="r">' + f("plan26","2026 plan") +
+        '</td><td class="r">' + f("plan27","2027 plan") +
+        '</td><td class="r n">' + eur0(num(d.budget)) +
+        '</td><td class="r"><button class="btn quiet" data-del-dist="' + d.id +
+        '" aria-label="Remove ' + esc(d.label) + '">' + ICON.trash + "</button></td></tr>";
     }
     const chip = d.dormant ? '<span class="chip idle">no active target</span>'
       : d.gap > 0 ? '<span class="chip behind">' + eur(d.gap) + " behind · " + d.pct + "%</span>"
       : d.gap < 0 ? '<span class="chip ahead">' + eur(-d.gap) + " ahead · " + d.pct + "%</span>"
       : '<span class="chip">on pace</span>';
+    const planOff = num(d.plan26) > 0 &&
+      Math.abs(num(d.plan26) - num(d.target)) / num(d.plan26) > 0.05;
     return "<tr" + (d.gap > 0 && !d.dormant ? ' class="attention"' : "") + ">" +
       "<td>" + esc(d.country) + "</td>" +
-      "<td>" + esc(d.name) +
-        (d.unconfirmed ? ' <span class="chip idle" title="Name carries a “?” in the source sheet and is carried over exactly">unconfirmed</span>' : "") +
+      "<td>" + (d.distributor ? esc(d.distributor) : '<span class="mutedcell">not named</span>') +
+        (d.uncertain ? ' <span class="chip idle" title="The sheet carries a “?” on this name; it is kept exactly as written">?</span>' : "") +
       "</td>" +
-      '<td class="r n">' + eur(d.target) + "</td>" +
-      '<td class="r n">' + eur(d.booked) + "</td>" +
-      '<td class="r">' + chip + "</td><td></td></tr>";
+      "<td>" + (d.terms ? '<span class="chip terms">' + esc(d.terms) + "</span>" : "") + "</td>" +
+      '<td class="r n">' + eur0(d.q3) + "</td>" +
+      '<td class="r n">' + eur0(d.booked) + "</td>" +
+      '<td class="r">' + chip + "</td>" +
+      '<td class="r n">' + eur0(num(d.target)) + "</td>" +
+      '<td class="r n"' + (planOff ? ' style="color:var(--waiting)" title="Differs from the pace column by more than 5%"' : "") +
+        ">" + eur0(num(d.plan26)) + "</td>" +
+      '<td class="r n">' + eur0(num(d.plan27)) + "</td>" +
+      '<td class="r n">' + eur0(num(d.budget)) + "</td><td></td></tr>";
   };
 
   const body = !act.length && !dor.length
-    ? '<tr><td colspan="6"><div class="empty">No distributors yet. Load the export below, or add rows by hand.</div></td></tr>'
+    ? '<tr><td colspan="11"><div class="empty">No distributors loaded.</div></td></tr>'
     : (act.length ? act.map(rowFor).join("") : "") +
       (dor.length
-        ? '<tr><td colspan="6"><div class="grouphead">No active target this year</div></td></tr>' +
+        ? '<tr><td colspan="11"><div class="grouphead">No active target this year</div></td></tr>' +
           dor.map(rowFor).join("")
         : "");
 
   return '<section class="sect"><div class="sect-head">' +
     "<h2>All distributors</h2>" +
-    '<span class="hint">Alphabetical by country. Dormant rows always sit at the bottom.</span></div>' +
+    '<span class="hint">Alphabetical by country · dormant rows always at the bottom</span></div>' +
     '<div class="scroller"><table><thead>' + head + "</thead><tbody>" + body + "</tbody></table></div>" +
     '<div class="btnrow" style="margin-top:12px">' +
       '<button class="btn sm" id="toggleEdit">' + (editRows ? "Done editing" : "Edit rows") + "</button>" +
       '<button class="btn sm" id="addDist">' + ICON.plus + "Add distributor</button>" +
+      '<button class="btn sm" id="reseed">Reload the sheet as supplied</button>' +
     "</div></section>";
 }
 
@@ -952,12 +1219,12 @@ function importPanel(){
   if (mapper) return mapperPanel();
   const xlsxReady = typeof XLSX !== "undefined";
   return '<section class="sect"><div class="sect-head">' +
-    "<h2>Load the distributor export</h2>" +
-    '<span class="hint">Replaces every row</span></div>' +
-    '<p style="font-size:12.5px;color:var(--ink-3);max-width:62ch">' +
-      "Pick the sheet's country, distributor, " + esc(S.quarter || "Q3") +
-      " target and year-to-date booked columns on the next step. The booked column is the " +
-      "year total — whatever monthly cells are filled in, current month included." + "</p>" +
+    "<h2>Load a newer export</h2>" +
+    '<span class="hint">Replaces every distributor row</span></div>' +
+    '<p style="font-size:12.5px;color:var(--ink-3);max-width:64ch">' +
+      "Drop in next month’s 2026_plan.xlsx and the “revenues” sheet is recognised on its own — " +
+      "the Country column, the “Q3 target” column and the bare-year booked column. Any other layout " +
+      "falls back to picking the columns by hand.</p>" +
     '<div class="formgrid wide" style="margin-top:12px">' +
       (xlsxReady
         ? '<div><label class="fld" for="xlsFile">Excel or CSV export</label>' +
@@ -965,11 +1232,13 @@ function importPanel(){
         : '<div><label class="fld">Excel export</label>' +
           '<div style="font-size:12px;color:var(--ink-3)">The spreadsheet reader did not load here. Paste the cells instead.</div></div>') +
       '<div><label class="fld" for="pasteBox">…or paste cells straight from Excel</label>' +
-        '<textarea id="pasteBox" placeholder="Country	Distributor	Q3 target	2026"></textarea>' +
-        '<div class="btnrow" style="margin-top:8px"><button class="btn sm" id="pasteGo">' + ICON.up + "Read pasted cells</button></div></div>" +
+        '<textarea id="pasteBox" placeholder="Country&#9;2026 target&#9;2026&#9;…"></textarea>' +
+        '<div class="btnrow" style="margin-top:8px"><button class="btn sm" id="pasteGo">' +
+        ICON.up + "Read pasted cells</button></div></div>" +
     "</div>" +
-    '<div><label class="fld" for="asOfIn" style="margin-top:12px">Export dated</label>' +
-      '<input type="date" id="asOfIn" value="' + esc(S.asOf || todayISO()) + '" style="max-width:220px"></div>' +
+    '<div style="margin-top:12px"><label class="fld" for="asOfIn">Export dated</label>' +
+      '<input type="date" id="asOfIn" value="' + esc(S.asOf || todayISO()) +
+      '" style="max-width:220px"></div>' +
     "</section>";
 }
 
@@ -981,14 +1250,19 @@ function mapperPanel(){
     "<h2>Which column is which?</h2>" +
     '<span class="hint">' + mapper.rows.length + " data rows found</span></div>" +
     '<div class="formgrid wide">' +
-      '<div><label class="fld" for="mapCountry">Country</label><select id="mapCountry">' + opts(mapper.guess.country) + "</select></div>" +
-      '<div><label class="fld" for="mapName">Distributor</label><select id="mapName">' + opts(mapper.guess.name) + "</select></div>" +
-      '<div><label class="fld" for="mapTarget">' + esc(S.quarter || "Q3") + ' target</label><select id="mapTarget">' + opts(mapper.guess.target) + "</select></div>" +
-      '<div><label class="fld" for="mapBooked">Booked year to date</label><select id="mapBooked">' + opts(mapper.guess.booked) + "</select></div>" +
+      '<div><label class="fld" for="mapCountry">Country / distributor label</label>' +
+        '<select id="mapCountry">' + opts(mapper.guess.country) + "</select></div>" +
+      '<div><label class="fld" for="mapTarget">' + esc(S.quarter) + ' target</label>' +
+        '<select id="mapTarget">' + opts(mapper.guess.q3) + "</select></div>" +
+      '<div><label class="fld" for="mapBooked">Booked year to date</label>' +
+        '<select id="mapBooked">' + opts(mapper.guess.booked) + "</select></div>" +
+      '<div><label class="fld" for="mapFull">Full-year target</label>' +
+        '<select id="mapFull"><option value="-1">none</option>' + opts(mapper.guess.target) + "</select></div>" +
     "</div>" +
     '<div class="notice info" style="margin-top:12px">' + ICON.info +
-      '<div class="nbody">Names carrying a “?” come across exactly as written — the board never resolves an ' +
-      'uncertain name by guessing. Rows with a €0 target and €0 booked land in “no active target this year”.</div></div>' +
+      '<div class="nbody">Labels shaped “Country — Distributor 4+1” split into country, distributor and terms. ' +
+      'A “?” is kept exactly as written and flagged as unconfirmed. Rows with a €0 target and €0 booked land ' +
+      'in “no active target this year”.</div></div>' +
     '<div class="btnrow" style="margin-top:12px">' +
       '<button class="btn primary" id="mapGo">' + ICON.check + "Import " + mapper.rows.length + " rows</button>" +
       '<button class="btn" id="mapCancel">Cancel</button>' +
@@ -1003,10 +1277,11 @@ function viewApprovals(){
   const reviewed = S.approvalsCheckedOn === todayISO();
 
   const state = reviewed
-    ? '<div class="notice info">' + ICON.check + '<div class="nbody"><strong>Today\'s email input is in.</strong> ' +
+    ? '<div class="notice info">' + ICON.check + '<div class="nbody"><strong>Today’s email input is in.</strong> ' +
       "The list below is what is genuinely still waiting on your ok.</div></div>"
-    : '<div class="notice">' + ICON.warn + '<div class="nbody"><strong>Today\'s email input has not been given yet.</strong> ' +
-      "Until you mark the inbox reviewed, the report says so out loud instead of implying this list is complete." +
+    : '<div class="notice">' + ICON.warn + '<div class="nbody"><strong>No order emails have been given for today.</strong> ' +
+      "The workbook carries revenue and events, not the inbox — so this section starts empty and the report says " +
+      "“needs today’s email input” rather than implying nothing is waiting." +
       '<div><button class="btn sm" id="markReviewed">' + ICON.check + "Inbox reviewed for today</button></div></div></div>";
 
   const list = open.length
@@ -1021,25 +1296,27 @@ function viewApprovals(){
           '<span class="chip ' + (a.days >= 3 ? "behind" : "waiting") + '">waiting ' + a.days +
             (a.days === 1 ? " day" : " days") + "</span>" +
           '<button class="btn sm" data-ok="' + a.id + '">' + ICON.check + "Ok sent</button>" +
-          '<button class="btn quiet" data-del-appr="' + a.id + '" aria-label="Remove ' + esc(a.ref) + '">' + ICON.trash + "</button>" +
+          '<button class="btn quiet" data-del-appr="' + a.id + '" aria-label="Remove ' + esc(a.ref) + '">' +
+            ICON.trash + "</button>" +
         "</div></div>").join("") + "</div>"
-    : '<div class="empty">Nothing waiting on an ok.</div>';
+    : '<div class="empty">Nothing logged as waiting on an ok.</div>';
 
   const add = '<section class="sect"><div class="sect-head"><h2>Log an order that arrived by email</h2></div>' +
     '<div class="formgrid wide">' +
       '<div><label class="fld" for="apprRef">Order reference and customer</label>' +
-        '<input id="apprRef" placeholder="PO-4491 — Alpen Dental"></div>' +
+        '<input id="apprRef" placeholder="PO-4491 — Khoury Dental"></div>' +
       '<div><label class="fld" for="apprDate">Arrived on</label>' +
         '<input type="date" id="apprDate" value="' + todayISO() + '"></div>' +
       '<div style="grid-column:1/-1"><label class="fld" for="apprNote">What it needs</label>' +
         '<input id="apprNote" placeholder="cerabone 1.0 cc ×40 — ok to customer service"></div>' +
     "</div>" +
-    '<div class="btnrow" style="margin-top:11px"><button class="btn primary" id="apprAdd">' + ICON.plus + "Add to the waiting list</button></div>" +
+    '<div class="btnrow" style="margin-top:11px"><button class="btn primary" id="apprAdd">' +
+      ICON.plus + "Add to the waiting list</button></div>" +
     "</section>";
 
   const cleared = closed.length
     ? '<section class="sect"><div class="sect-head"><h2>Ok sent</h2>' +
-      '<span class="hint">' + closed.length + " today and earlier</span></div>" +
+      '<span class="hint">' + closed.length + " total</span></div>" +
       '<div class="rows">' + closed.slice(-8).reverse().map(a =>
         '<div class="row"><div class="rail"></div><div class="rbody">' +
           '<div class="rtitle" style="font-weight:500;color:var(--ink-2)">' + esc(a.ref) + "</div>" +
@@ -1048,7 +1325,7 @@ function viewApprovals(){
       "</div></section>"
     : "";
 
-  return '<div class="stack">' + exampleBanner() + state +
+  return '<div class="stack">' + state +
     '<section class="sect"><div class="sect-head"><h2>Waiting on your ok to customer service</h2>' +
       '<span class="hint">Longest wait first</span></div>' + list + "</section>" +
     add + cleared + "</div>";
@@ -1056,102 +1333,386 @@ function viewApprovals(){
 
 /* ---------- Events ---------- */
 
+function eventBudgetFor(e){
+  const d = S.distributors.find(x => x.country === e.country &&
+    (!e.distributor || x.distributor === e.distributor));
+  return d ? num(d.budget) : 0;
+}
+
+function eventBlock(e, isPast){
+  const away = daysAway(e.date);
+  const soon = !isPast && away !== null && away <= 21;
+  const open = READY_ITEMS.filter(it => ((e.status || {})[it.key] || "no_update") !== "done").length;
+  const budget = eventBudgetFor(e);
+  const prog = S.checklists[e.id] ? clProgress(e.id) : null;
+
+  const slip = brandSlip(e.name)
+    ? '<div class="notice bad" style="margin:0 15px 13px">' + ICON.warn +
+      '<div class="nbody"><strong>The event brand reads “DAY”.</strong> It must read “' + esc(BRAND) + '”.' +
+      '<div><button class="btn sm" data-fixbrand="' + e.id + '">Fix to “DAYS”</button></div></div></div>'
+    : "";
+  const flag = e.flag
+    ? '<div class="notice" style="margin:0 15px 13px">' + ICON.warn +
+      '<div class="nbody">' + esc(e.flag) + "</div></div>"
+    : "";
+
+  const items = READY_ITEMS.map(it => {
+    const st = (e.status || {})[it.key] || "no_update";
+    return '<div class="item"><div><div class="nm">' + esc(it.name) + "</div>" +
+      '<div class="note">' + esc(it.note) + "</div></div>" +
+      '<div class="selwrap"><select id="st-' + e.id + "-" + it.key +
+        '" aria-label="' + esc(it.name) + '" data-ev="' + e.id + '" data-item="' + it.key + '">' +
+      STATUSES.map(s => '<option value="' + s.key + '"' + (s.key === st ? " selected" : "") + ">" +
+        s.label + "</option>").join("") + "</select></div></div>";
+  }).join("");
+
+  return '<section class="ev' + (soon ? " soon" : "") + (isPast ? " past" : "") + '"><header>' +
+    "<h3>" + esc(eventTitle(e)) + "</h3>" +
+    '<span class="when">' + esc(fmtDateShort(e.date)) + " · " + esc(awayText(e.date, e.dayKnown)) + "</span>" +
+    '<span class="chip ' + (open === 0 ? "done" : open >= 4 ? "behind" : "waiting") + '">' +
+      (open === 0 ? "all five ready" : open + " of 5 open") + "</span>" +
+    (e.kind ? '<span class="chip ' + (e.kind === "BRD" ? "marine" : "idle") + '">' + esc(e.kind) + "</span>" : "") +
+    '<div class="speaker">Speaker: ' + (e.speaker ? esc(e.speaker) : "no update yet") +
+      (budget ? " · event budget " + eur(budget) + " (5% of target)" : "") +
+      (prog ? " · checklist " + prog.done + "/" + prog.total : "") + "</div>" +
+    (e.rawNote ? '<div class="rawnote">sheet cell' + (e.month ? " (" + esc(e.month) + ")" : "") +
+      ": “" + esc(e.rawNote) + "”</div>" : "") +
+    "</header>" + slip + flag +
+    '<div class="ready">' + items + "</div>" +
+    "<footer>" +
+      '<div style="flex:1 1 160px;min-width:0"><label class="fld" for="ev-name-' + e.id + '">Event name</label>' +
+        '<input id="ev-name-' + e.id + '" data-evfield="name" data-ev="' + e.id + '" value="' + esc(e.name) + '"></div>' +
+      '<div style="flex:0 1 150px"><label class="fld" for="ev-date-' + e.id + '">Date</label>' +
+        '<input type="date" id="ev-date-' + e.id + '" data-evfield="date" data-ev="' + e.id + '" value="' + esc(e.date) + '"></div>' +
+      '<div style="flex:1 1 160px;min-width:0"><label class="fld" for="ev-sp-' + e.id + '">Speaker / KOL</label>' +
+        '<input id="ev-sp-' + e.id + '" data-evfield="speaker" data-ev="' + e.id + '" value="' + esc(e.speaker || "") +
+        '" placeholder="empty reads “no update yet”"></div>' +
+      '<button class="btn sm" data-opench="' + e.id + '">Open checklist</button>' +
+      '<button class="btn quiet" data-del-ev="' + e.id + '" aria-label="Remove ' + esc(eventTitle(e)) + '">' +
+        ICON.trash + "Remove</button>" +
+    "</footer></section>";
+}
+
+function vipBlock(){
+  const v = S.vip;
+  if (!v) return "";
+  const off = v.roomsAllocated !== v.roomsBooked;
+  return '<section class="sect"><div class="sect-head">' +
+    "<h2>September VIP event</h2>" +
+    '<span class="hint">events sheet, September total row</span></div>' +
+    '<div class="rawnote" style="font-family:var(--f-mono);font-size:10.5px;color:var(--ink-3);margin-bottom:11px">' +
+      'sheet cell: “' + esc(v.rawNote) + '”</div>' +
+    (off ? '<div class="notice">' + ICON.warn + '<div class="nbody"><strong>' + v.roomsAllocated +
+      " rooms are allocated against " + v.roomsBooked + " booked.</strong> The per-country split in the " +
+      "sheet adds up to " + v.roomsAllocated + ". Confirm the room count before the guest list goes out." +
+      "</div></div>" : "") +
+    '<div class="scroller" style="margin-top:11px"><table><thead><tr><th>Country</th>' +
+      '<th>Sheet label</th><th class="r">Rooms</th></tr></thead><tbody>' +
+      v.rooms.map(r => "<tr><td>" + esc(r.country) + '</td><td class="mutedcell">' + esc(r.label) +
+        '</td><td class="r n">' + r.n + "</td></tr>").join("") +
+      '<tr><td colspan="2"><strong>Allocated</strong></td><td class="r n"><strong>' +
+        v.roomsAllocated + "</strong></td></tr>" +
+      '<tr><td colspan="2">Booked per the sheet</td><td class="r n">' + v.roomsBooked + "</td></tr>" +
+    "</tbody></table></div></section>";
+}
+
 function viewEvents(){
-  const evs = sortedEvents();
-  const blocks = evs.length ? evs.map(e => {
-    const away = daysAway(e.date);
-    const soon = away !== null && away >= 0 && away <= 21;
-    const awayTxt = away === null ? "date not set"
-      : away === 0 ? "today"
-      : away > 0 ? away + (away === 1 ? " day away" : " days away")
-      : Math.abs(away) + (Math.abs(away) === 1 ? " day ago" : " days ago");
-    const open = READY_ITEMS.filter(it => ((e.status || {})[it.key] || "no_update") !== "done").length;
-
-    const slip = brandSlip(e.name)
-      ? '<div class="notice bad" style="margin:0 15px 13px">' + ICON.warn +
-        '<div class="nbody"><strong>The event brand reads “DAY”.</strong> It must read “' + esc(BRAND) + '”.' +
-        '<div><button class="btn sm" data-fixbrand="' + e.id + '">Fix to “DAYS”</button></div></div></div>'
-      : "";
-
-    const items = READY_ITEMS.map(it => {
-      const st = (e.status || {})[it.key] || "no_update";
-      return '<div class="item"><div><div class="nm">' + esc(it.name) + "</div>" +
-        '<div class="note">' + esc(it.note) + "</div></div>" +
-        '<div class="selwrap"><label class="fld" for="st-' + e.id + "-" + it.key + '" style="display:none">' +
-          esc(it.name) + "</label>" +
-        '<select id="st-' + e.id + "-" + it.key + '" data-ev="' + e.id + '" data-item="' + it.key + '">' +
-        STATUSES.map(s => '<option value="' + s.key + '"' + (s.key === st ? " selected" : "") + ">" +
-          s.label + "</option>").join("") + "</select></div></div>";
-    }).join("");
-
-    return '<section class="ev' + (soon ? " soon" : "") + '"><header>' +
-      "<h3>" + esc(e.name) + "</h3>" +
-      '<span class="when">' + esc(fmtDateShort(e.date)) + " · " + esc(awayTxt) + "</span>" +
-      '<span class="chip ' + (open === 0 ? "done" : open >= 4 ? "behind" : "waiting") + '">' +
-        (open === 0 ? "all five ready" : open + " of 5 open") + "</span>" +
-      '<div class="speaker">Speaker: ' + (e.speaker ? esc(e.speaker) : "no update yet") +
-        (e.partner ? " · Partner: " + esc(e.partner) : "") + "</div>" +
-      "</header>" + slip +
-      '<div class="ready">' + items + "</div>" +
-      "<footer>" +
-        '<div style="flex:1 1 150px;min-width:0"><label class="fld" for="ev-name-' + e.id + '">Event name</label>' +
-          '<input id="ev-name-' + e.id + '" data-evfield="name" data-ev="' + e.id + '" value="' + esc(e.name) + '"></div>' +
-        '<div style="flex:0 1 150px"><label class="fld" for="ev-date-' + e.id + '">Date</label>' +
-          '<input type="date" id="ev-date-' + e.id + '" data-evfield="date" data-ev="' + e.id + '" value="' + esc(e.date) + '"></div>' +
-        '<div style="flex:1 1 150px;min-width:0"><label class="fld" for="ev-sp-' + e.id + '">Speaker / KOL</label>' +
-          '<input id="ev-sp-' + e.id + '" data-evfield="speaker" data-ev="' + e.id + '" value="' + esc(e.speaker || "") + '" placeholder="leave empty for “no update yet”"></div>' +
-        '<div style="flex:1 1 150px;min-width:0"><label class="fld" for="ev-pa-' + e.id + '">Partner / distributor</label>' +
-          '<input id="ev-pa-' + e.id + '" data-evfield="partner" data-ev="' + e.id + '" value="' + esc(e.partner || "") + '"></div>' +
-        '<button class="btn quiet" data-del-ev="' + e.id + '" aria-label="Remove ' + esc(e.name) + '">' + ICON.trash + "Remove</button>" +
-      "</footer></section>";
-  }).join("") : '<div class="sect"><div class="empty">No events yet. Add the next BRD below.</div></div>';
+  const up = upcomingEvents(), past = pastEvents();
+  const blocks = up.length
+    ? up.map(e => eventBlock(e, false)).join("")
+    : '<div class="sect"><div class="empty">No upcoming events.</div></div>';
 
   const add = '<section class="sect"><div class="sect-head"><h2>Add an event</h2>' +
     '<span class="hint">All five readiness lines start at “no update yet”</span></div>' +
     '<div class="formgrid wide">' +
-      '<div style="grid-column:1/-1"><label class="fld" for="evName">Event name</label>' +
-        '<input id="evName" placeholder="' + esc(BRAND) + ' Vienna"></div>' +
+      '<div><label class="fld" for="evCountry">Country</label><input id="evCountry" placeholder="Kuwait"></div>' +
+      '<div><label class="fld" for="evDist">Distributor</label><input id="evDist" placeholder="RoyalPedia"></div>' +
+      '<div><label class="fld" for="evName">Event</label><input id="evName" placeholder="BRD"></div>' +
       '<div><label class="fld" for="evDate">Date</label><input type="date" id="evDate" value="' + todayISO() + '"></div>' +
       '<div><label class="fld" for="evSpeaker">Speaker / KOL</label><input id="evSpeaker" placeholder="optional"></div>' +
-      '<div><label class="fld" for="evPartner">Partner / distributor</label><input id="evPartner" placeholder="optional"></div>' +
     "</div>" +
-    '<div class="btnrow" style="margin-top:11px"><button class="btn primary" id="evAdd">' + ICON.plus + "Add event</button></div>" +
-    "</section>";
+    '<div class="btnrow" style="margin-top:11px"><button class="btn primary" id="evAdd">' +
+      ICON.plus + "Add event</button></div></section>";
 
-  return '<div class="stack">' + exampleBanner() + blocks + add + "</div>";
+  const pastPart = past.length
+    ? '<div class="grouphead">Already happened this year (' + past.length + ")</div>" +
+      '<div class="btnrow"><button class="btn sm" id="togglePast">' +
+        (S.showPast ? "Hide" : "Show") + " past events</button></div>" +
+      (S.showPast ? past.map(e => eventBlock(e, true)).join("") : "")
+    : "";
+
+  return '<div class="stack">' + blocks + vipBlock() + add +
+    (pastPart ? pastPart : "") + "</div>";
+}
+
+/* ---------- Checklist ---------- */
+
+function viewChecklist(){
+  const evs = upcomingEvents();
+  if (!evs.length) {
+    return '<div class="sect"><div class="empty">No upcoming events to run a checklist for.</div></div>';
+  }
+  if (!clEvent || !evs.some(e => e.id === clEvent)) {
+    const brd = evs.find(e => e.kind === "BRD");
+    clEvent = (brd || evs[0]).id;
+  }
+  const e = S.events.find(x => x.id === clEvent);
+  const c = clFor(clEvent);
+  const p = clProgress(clEvent);
+  const w = o => p.total ? (p.byOwner[o][0] / p.total * 100) : 0;
+
+  const picker = '<section class="sect"><div class="sect-head">' +
+    '<div><div class="eyebrow">' + esc(BRAND) + "</div>" +
+    '<h2 style="font-size:18px;margin-top:4px">Event checklist</h2></div>' +
+    '<span class="hint">Every field from the BRD event checklist</span></div>' +
+    '<div><label class="fld" for="clPick">Which event</label><select id="clPick">' +
+      evs.map(x => '<option value="' + x.id + '"' + (x.id === clEvent ? " selected" : "") + ">" +
+        esc(eventTitle(x)) + " — " + esc(fmtDateShort(x.date)) +
+        " (" + esc(awayText(x.date, x.dayKnown)) + ")</option>").join("") +
+    "</select></div>" +
+    '<div style="margin-top:13px">' +
+      '<div class="chiprow" style="margin-bottom:7px">' +
+        '<span class="chip marine" id="clProg">' + p.done + " of " + p.total +
+          " required fields in · " + p.pct + "%</span>" +
+        '<span class="chip partner">Partner ' + p.byOwner.partner[0] + "/" + p.byOwner.partner[1] + "</span>" +
+        '<span class="chip speaker">Speaker ' + p.byOwner.speaker[0] + "/" + p.byOwner.speaker[1] + "</span>" +
+        '<span class="chip">botiss ' + p.byOwner.botiss[0] + "/" + p.byOwner.botiss[1] + "</span>" +
+      "</div>" +
+      '<div class="meter">' +
+        '<i class="p" style="width:' + w("partner") + '%"></i>' +
+        '<i class="s" style="width:' + w("speaker") + '%"></i>' +
+        '<i class="b" style="width:' + w("botiss") + '%"></i>' +
+      "</div>" +
+    "</div>" +
+    '<div class="btnrow" style="margin-top:13px">' +
+      '<button class="btn" id="chasePartner">' + ICON.copy + "Copy what the partner still owes</button>" +
+      '<button class="btn" id="chaseSpeaker">' + ICON.copy + "Copy what the speaker still owes</button>" +
+      '<button class="btn" id="clDownload">' + ICON.down + "Download the filled checklist</button>" +
+    "</div></section>";
+
+  const sections = CHECKLIST.map(sec => {
+    const isOpen = !!clOpen[sec.id];
+    const reqs = sec.items.filter(i => i.required);
+    const doneN = reqs.filter(i => itemAnswered(i, c)).length;
+    const chip = !reqs.length ? '<span class="chip idle">optional</span>'
+      : doneN === reqs.length ? '<span class="chip done">' + ICON.check + "complete</span>"
+      : '<span class="chip waiting">' + doneN + " of " + reqs.length + "</span>";
+    return '<section class="cl" data-open="' + isOpen + '">' +
+      '<button class="clhead" data-clsec="' + sec.id + '" aria-expanded="' + isOpen + '">' +
+        "<h3>" + esc(sec.title) + "</h3>" + chip +
+        '<span class="caret">' + ICON.caret + "</span></button>" +
+      (isOpen ? '<div class="clbody">' + sec.items.map(it => clItem(it, c)).join("") + "</div>" : "") +
+    "</section>";
+  }).join("");
+
+  return '<div class="stack">' + picker +
+    (brandSlip(e.name)
+      ? '<div class="notice bad">' + ICON.warn + '<div class="nbody"><strong>This event’s name reads “DAY”.</strong> ' +
+        'The flyer brand must read “' + esc(BRAND) + '”.</div></div>'
+      : "") +
+    sections + "</div>";
+}
+
+function ownerChip(owner){
+  const cls = owner === "partner" ? "partner" : owner === "speaker" ? "speaker" : "marine";
+  return '<span class="chip ' + cls + '">' + OWNERS[owner] + "</span>";
+}
+
+function clItem(it, c){
+  const v = c.values[it.id];
+  const done = itemAnswered(it, c);
+  const id = "cl-" + it.id;
+  const head = '<div class="cltop"><div class="cllab">' + esc(it.label) +
+    (it.required || it.type === "fixed"
+      ? "" : ' <span class="mutedcell" style="font-weight:400">optional</span>') + "</div>" +
+    ownerChip(it.owner) +
+    (done && it.type !== "fixed" ? '<span class="chip done">' + ICON.check + "in</span>" : "") +
+    "</div>" + (it.hint ? '<div class="clhint">' + esc(it.hint) + "</div>" : "");
+
+  let field = "";
+  switch (it.type) {
+    case "fixed":
+      field = '<div class="clfield"><input id="' + id + '" value="' + esc(it.value) +
+        '" readonly aria-label="' + esc(it.label) + '" style="background:var(--surface-2)"></div>';
+      break;
+    case "text":
+      field = '<div class="clfield"><input id="' + id + '" data-cl="' + it.id +
+        '" aria-label="' + esc(it.label) + '" value="' + esc(v || "") + '"></div>';
+      break;
+    case "textarea":
+      field = '<div class="clfield"><textarea id="' + id + '" data-cl="' + it.id +
+        '" aria-label="' + esc(it.label) + '">' + esc(v || "") + "</textarea></div>";
+      break;
+    case "check":
+      field = '<div class="clfield"><label class="tick" for="' + id + '">' +
+        '<input type="checkbox" id="' + id + '" data-clcheck="' + it.id + '"' +
+        (v === true ? " checked" : "") + "> Done</label></div>";
+      break;
+    case "checkqty":
+      field = '<div class="clfield"><label class="tick" for="' + id + '">' +
+        '<input type="checkbox" id="' + id + '" data-clcheck="' + it.id + '"' +
+        (v === true ? " checked" : "") + "> Needed</label>" +
+        '<div class="qtyrow"><div><label class="fld" for="' + id + '-q">Per participant</label>' +
+          '<input id="' + id + '-q" data-clqty="' + it.id + '" value="' +
+          esc(c.values[it.id + "__qty"] || "") + '" placeholder="e.g. 2"></div>' +
+        '<div><label class="fld" for="' + id + '-n">Notes</label>' +
+          '<input id="' + id + '-n" data-clnote="' + it.id + '" value="' +
+          esc(c.values[it.id + "__note"] || "") + '" placeholder="size, amount, anything to specify"></div>' +
+        "</div></div>";
+      break;
+    case "checkset": {
+      const on = Array.isArray(v) ? v : [];
+      field = '<div class="subs">' + it.subs.map((s, i) =>
+        '<label for="' + id + "-" + i + '"><input type="checkbox" id="' + id + "-" + i +
+        '" data-clset="' + it.id + '" data-sub="' + esc(s) + '"' +
+        (on.indexOf(s) > -1 ? " checked" : "") + "> " + esc(s) + "</label>").join("") + "</div>";
+      break;
+    }
+    case "tags": {
+      const full = c.tags.length >= TAG_CAP;
+      field = '<div class="clfield">' +
+        '<div class="label">Products</div><div class="tagpool">' +
+          CAMPUS_TAGS.products.map(t => tagBtn(t, c, full)).join("") + "</div>" +
+        '<div class="label" style="margin-top:11px">Indications</div><div class="tagpool">' +
+          CAMPUS_TAGS.indications.map(t => tagBtn(t, c, full)).join("") + "</div>" +
+        '<div class="clhint" style="margin-top:9px">' + c.tags.length + " of " + TAG_CAP + " chosen" +
+          (full ? " — the cap is reached, unpick one to swap" : "") + "</div></div>";
+      break;
+    }
+    case "timetable":
+      field = '<div class="tt">' + TIMETABLE.map(r =>
+        r.kind === "break"
+          ? '<div class="ttrow"><div class="tmark">' + r.t + '</div><div class="tbreak">' +
+            esc(r.label) + "</div></div>"
+          : '<div class="ttrow"><div class="tmark">' + r.t + "</div>" +
+            '<input id="tt-' + r.key + '" data-cltt="' + r.key + '" aria-label="' +
+            esc(r.label) + " at " + r.t + '" value="' + esc(c.tt[r.key] || "") +
+            '" placeholder="' + esc(r.label) + ' — title or speaker"></div>').join("") + "</div>";
+      break;
+    case "speakers":
+      field = '<div class="clfield">' + c.speakers.map((s, i) => speakerBlock(s, i)).join("") +
+        '<div class="btnrow" style="margin-top:10px"><button class="btn sm" id="addSpeaker">' +
+        ICON.plus + (c.speakers.length ? "Add another speaker" : "Add a speaker") + "</button></div></div>";
+      break;
+  }
+  return '<div class="cli' + (done && it.type !== "fixed" ? " done" : "") + '">' + head + field + "</div>";
+}
+
+function tagBtn(t, c, full){
+  const on = c.tags.indexOf(t) > -1;
+  return '<button class="tagbtn" data-tag="' + esc(t) + '" aria-pressed="' + on + '"' +
+    (!on && full ? " disabled" : "") + ">" + esc(t) + "</button>";
+}
+
+function speakerBlock(s, i){
+  const F = (key, lab, ph, area) => '<div style="grid-column:1/-1"><label class="fld" for="spk-' +
+    key + "-" + i + '">' + lab + "</label>" +
+    (area
+      ? '<textarea id="spk-' + key + "-" + i + '" data-spk="' + i + '" data-spkf="' + key +
+        '" placeholder="' + ph + '">' + esc(s[key] || "") + "</textarea>"
+      : '<input id="spk-' + key + "-" + i + '" data-spk="' + i + '" data-spkf="' + key +
+        '" value="' + esc(s[key] || "") + '" placeholder="' + ph + '">') + "</div>";
+  return '<div class="spk"><h4>Speaker ' + (i + 1) + '<span class="grow"></span>' +
+    '<button class="btn quiet" data-delspk="' + i + '" aria-label="Remove speaker ' + (i + 1) + '">' +
+      ICON.trash + "</button></h4>" +
+    '<div class="formgrid wide">' +
+      F("title", "Lecture title", "") +
+      F("name", "Speaker", "full title — and send a high-resolution profile picture") +
+      F("abstract", "Abstract", "short abstract about the entire day talk", true) +
+      F("cv", "CV", "a few sentences as text, not bullet points", true) +
+      '<div><label class="fld" for="spk-hoTitle-' + i + '">Hands-on title</label>' +
+        '<input id="spk-hoTitle-' + i + '" data-spk="' + i + '" data-spkf="hoTitle" value="' +
+        esc(s.hoTitle || "") + '" placeholder="only if different"></div>' +
+      '<div><label class="fld" for="spk-hoAbstract-' + i + '">Hands-on abstract</label>' +
+        '<input id="spk-hoAbstract-' + i + '" data-spk="' + i + '" data-spkf="hoAbstract" value="' +
+        esc(s.hoAbstract || "") + '" placeholder="only if different"></div>' +
+    "</div></div>";
+}
+
+function buildChecklistText(eventId){
+  const e = S.events.find(x => x.id === eventId);
+  const c = clFor(eventId);
+  const L = [BRAND, eventTitle(e) + " — " + fmtDate(e.date), ""];
+  CHECKLIST.forEach(sec => {
+    L.push(sec.title.toUpperCase());
+    sec.items.forEach(it => {
+      const v = c.values[it.id];
+      const tag = "[" + OWNERS[it.owner] + "]";
+      if (it.type === "fixed") { L.push("- " + it.label + ": " + it.value + " " + tag); return; }
+      if (it.type === "tags") {
+        L.push("- botissCAMPUS tags " + tag + ": " + (c.tags.length ? c.tags.join(", ") : "not chosen yet"));
+        return;
+      }
+      if (it.type === "timetable") {
+        L.push("- Timetable " + tag + ":");
+        TIMETABLE.forEach(r => L.push("    " + r.t + "  " +
+          (r.kind === "break" ? r.label : (c.tt[r.key] || "????"))));
+        return;
+      }
+      if (it.type === "speakers") {
+        if (!c.speakers.length) { L.push("- Speakers " + tag + ": none entered yet"); return; }
+        c.speakers.forEach((s, i) => {
+          L.push("- Speaker " + (i + 1) + " " + tag);
+          L.push("    Lecture title: " + (s.title || "????"));
+          L.push("    Speaker:       " + (s.name || "????"));
+          L.push("    Abstract:      " + (s.abstract || "????"));
+          L.push("    CV:            " + (s.cv || "????"));
+          if (s.hoTitle) L.push("    Hands-on title:    " + s.hoTitle);
+          if (s.hoAbstract) L.push("    Hands-on abstract: " + s.hoAbstract);
+        });
+        return;
+      }
+      if (it.type === "checkset") {
+        const on = Array.isArray(v) ? v : [];
+        L.push("- " + it.label + " " + tag + ": " + (on.length ? on.join(", ") : "nothing ticked"));
+        return;
+      }
+      if (it.type === "check") {
+        L.push("- " + it.label + " " + tag + ": " + (v === true ? "done" : "not yet")); return;
+      }
+      if (it.type === "checkqty") {
+        const q = c.values[it.id + "__qty"], n = c.values[it.id + "__note"];
+        L.push("- " + it.label + " " + tag + ": " + (v === true ? "needed" : "not needed") +
+          (q ? " · " + q + " per participant" : "") + (n ? " · " + n : ""));
+        return;
+      }
+      L.push("- " + it.label + " " + tag + ": " + (v && String(v).trim() ? String(v).trim() : "????"));
+    });
+    L.push("");
+  });
+  const p = clProgress(eventId);
+  L.push("Required fields in: " + p.done + " of " + p.total + " (" + p.pct + "%)");
+  return L.join("\n");
 }
 
 /* ---------- Report ---------- */
 
 function viewReport(){
-  const txt = buildReport();
   return '<div class="stack">' +
-    (S.example
-      ? '<div class="notice">' + ICON.warn + '<div class="nbody"><strong>This report is built from example rows.</strong> ' +
-        'Its header says so too, so it cannot be sent by accident as real figures.</div></div>'
-      : "") +
     '<section class="sect plain"><div class="sect-head">' +
-      '<div><div class="eyebrow">Daily check-in</div><h2 style="font-size:19px;margin-top:4px">One page, same shape every day</h2></div>' +
+      '<div><div class="eyebrow">Daily check-in</div>' +
+      '<h2 style="font-size:19px;margin-top:4px">One page, same shape every day</h2></div>' +
       '<span class="hint">Generated from the board — nothing typed twice</span></div>' +
       '<div class="btnrow" style="margin-bottom:12px">' +
         '<button class="btn primary" id="copyReport">' + ICON.copy + "Copy report</button>" +
         '<button class="btn" id="dlReport">' + ICON.down + "Download as text</button>" +
       "</div>" +
-      '<pre class="report" id="reportBody">' + esc(txt) + "</pre>" +
+      '<pre class="report" id="reportBody">' + esc(buildReport()) + "</pre>" +
     "</section>" +
-    '<p class="foot">Sections never drop out, even when empty: an unreported readiness item reads “no update yet”, ' +
-    "and a day without email input says so rather than implying the approvals list is complete.</p>" +
+    '<p class="foot">Sections never drop out, even when empty: an unreported readiness item reads ' +
+    "“no update yet”, and a day without email input says so rather than implying the approvals list " +
+    "is complete. Figures are the sheet’s own Q3 target and “2026” booked columns from " +
+    "2026_plan.xlsx.</p>" +
   "</div>";
 }
 
 /* =====================================================================
-   6. IMPORT
+   8. IMPORT
    ===================================================================== */
 
-/* Handles both "1.234,56" and "1,234.56", plus € signs and spaces. */
 function parseMoney(v){
   if (typeof v === "number") return Number.isFinite(v) ? v : 0;
-  let s = String(v == null ? "" : v).replace(/[€$\s ]/g, "").trim();
+  let s = String(v == null ? "" : v).replace(/[€$\s ]/g, "").trim();
   if (!s || /^[-–—]$/.test(s)) return 0;
   const neg = /^\(.*\)$/.test(s);
   s = s.replace(/[()]/g, "");
@@ -1169,33 +1730,47 @@ function parseMoney(v){
   return neg ? -n : n;
 }
 
+/* "Bulgaria-Ultradental 4+1" -> Bulgaria / Ultradental / 4+1, with a "?"
+   kept as an unconfirmed-name flag rather than edited away. */
+function splitLabel(raw){
+  let s = String(raw || "").trim();
+  const uncertain = s.indexOf("?") > -1;
+  s = s.replace(/\?/g, "").trim();
+  let terms = "";
+  const t = s.match(/(\d\s*\+\s*\d)\s*$/);
+  if (t) { terms = t[1].replace(/\s+/g, ""); s = s.slice(0, t.index).trim(); }
+  let country = s, distributor = "";
+  const dash = s.match(/^(.*?)\s*[-–—]\s*(.+)$/);
+  if (dash) { country = dash[1].trim(); distributor = dash[2].trim(); }
+  else {
+    const sp = s.match(/^(\S+)\s+(.+)$/);
+    if (sp) { country = sp[1].trim(); distributor = sp[2].trim(); }
+  }
+  return { country, distributor, terms, uncertain, raw:String(raw || "").trim() };
+}
+
 function guessColumns(headers){
-  const find = (...pats) => {
-    for (const p of pats) {
+  const find = function(){
+    for (let k = 0; k < arguments.length; k++) {
+      const p = arguments[k];
       const i = headers.findIndex(h => p.test(String(h || "")));
       if (i > -1) return i;
     }
     return -1;
   };
   const year = new Date().getFullYear();
-  const country = find(/^\s*(country|land|region)\s*$/i, /countr|land/i);
-  const name    = find(/distrib|partner|customer|kunde|company|firma|name/i);
-  const target  = find(new RegExp("q[1-4].*(target|ziel)", "i"), /target|ziel|plan|budget/i);
-  const booked  = find(new RegExp("^\\s*" + year + "\\s*$"), new RegExp(String(year)),
-                       /booked|actual|ytd|revenue|umsatz|total|ist/i);
-  const fallback = (i, alt) => i > -1 ? i : Math.min(alt, Math.max(headers.length - 1, 0));
+  const fb = (i, alt) => i > -1 ? i : Math.min(alt, Math.max(headers.length - 1, 0));
   return {
-    country: fallback(country, 0),
-    name:    fallback(name, 1),
-    target:  fallback(target, 2),
-    booked:  fallback(booked, 3)
+    country: fb(find(/^\s*(country|land|region)\s*$/i, /countr|land/i, /distrib|partner/i), 0),
+    q3:      fb(find(/q[1-4]\s*target/i, /^\s*q[1-4]\b/i), 1),
+    booked:  fb(find(new RegExp("^\\s*" + year + "\\s*$"), /booked|actual|ytd|umsatz|ist/i), 2),
+    target:  fb(find(new RegExp("^\\s*" + year + "\\s*target\\s*$", "i"), /target|ziel|plan|budget/i), 3)
   };
 }
 
-/* The header row is the one, in the first ten, with the most non-empty
-   text cells — export sheets often open with a title and a blank line. */
 function openMapper(matrix){
-  const rows = matrix.filter(r => Array.isArray(r) && r.some(c => String(c == null ? "" : c).trim() !== ""));
+  const rows = matrix.filter(r => Array.isArray(r) &&
+    r.some(c => String(c == null ? "" : c).trim() !== ""));
   if (rows.length < 2) { toast("Could not find any rows in that. Check the sheet and try again."); return; }
   let hi = 0, best = -1;
   rows.slice(0, 10).forEach((r, i) => {
@@ -1203,33 +1778,51 @@ function openMapper(matrix){
     if (score > best) { best = score; hi = i; }
   });
   const headers = rows[hi].map(h => String(h == null ? "" : h).trim());
-  const width = Math.max(headers.length, ...rows.map(r => r.length));
+  const width = Math.max.apply(null, [headers.length].concat(rows.map(r => r.length)));
   while (headers.length < width) headers.push("column " + (headers.length + 1));
   mapper = { headers, rows: rows.slice(hi + 1), guess: guessColumns(headers) };
+
+  /* The 2026_plan "revenues" layout is recognised outright: a Country
+     column, a "Q3 target" column and a bare-year booked column. */
+  const year = String(new Date().getFullYear());
+  const known = /^\s*country\s*$/i.test(headers[0] || "") &&
+    headers.some(h => /q[1-4]\s*target/i.test(String(h))) &&
+    headers.some(h => String(h).trim() === year);
+  if (known) { applyMapper(true); return; }
   render();
 }
 
-function applyMapper(){
-  const pick = id => parseInt(document.getElementById(id).value, 10) || 0;
-  const c = pick("mapCountry"), n = pick("mapName"), t = pick("mapTarget"), b = pick("mapBooked");
+function applyMapper(auto){
+  const pick = id => { const el = document.getElementById(id); return el ? parseInt(el.value, 10) : -1; };
+  const g = mapper.guess;
+  const c = auto ? g.country : pick("mapCountry");
+  const q = auto ? g.q3      : pick("mapTarget");
+  const b = auto ? g.booked  : pick("mapBooked");
+  const f = auto ? g.target  : pick("mapFull");
   const out = [];
   mapper.rows.forEach(r => {
-    const country = String(r[c] == null ? "" : r[c]).trim();
-    const name    = String(r[n] == null ? "" : r[n]).trim();
-    if (!country && !name) return;
-    if (/^(total|sum|summe|gesamt)\b/i.test(country) || /^(total|sum|summe|gesamt)\b/i.test(name)) return;
-    out.push({ id:uid(), country, name, target:parseMoney(r[t]), booked:parseMoney(r[b]) });
+    const label = String(r[c] == null ? "" : r[c]).trim();
+    if (!label) return;
+    if (/^(total|sum|summe|gesamt|growth)\b/i.test(label)) return;
+    const s = splitLabel(label);
+    if (!s.country) return;
+    const full = f > -1 ? parseMoney(r[f]) : 0;
+    out.push({ id:uid(), country:s.country, distributor:s.distributor, terms:s.terms,
+      uncertain:s.uncertain, raw:s.raw,
+      q3: parseMoney(r[q]), booked: parseMoney(r[b]), target: full,
+      plan26: 0, plan27: 0, budget: Math.round(full * 0.05 * 100) / 100, months: {} });
   });
   if (!out.length) { toast("Those columns produced no rows. Try a different mapping."); return; }
   S.distributors = out;
-  S.example = false;
+  S.asOf = todayISO();
   mapper = null;
   commit();
-  toast("Loaded " + out.length + " distributors from the export.");
+  toast("Loaded " + out.length + " distributors" +
+    (auto ? " — the revenues layout was recognised." : "."));
 }
 
 /* =====================================================================
-   7. EVENTS & WIRING
+   9. WIRING
    ===================================================================== */
 
 let toastTimer = null;
@@ -1238,28 +1831,61 @@ function toast(msg){
   el.textContent = msg;
   el.classList.add("on");
   clearTimeout(toastTimer);
-  toastTimer = setTimeout(() => el.classList.remove("on"), 2600);
+  toastTimer = setTimeout(() => el.classList.remove("on"), 2800);
 }
+const findDist  = id => S.distributors.find(d => d.id === id);
+const findEvent = id => S.events.find(e => e.id === id);
 
-function findDist(id){ return S.distributors.find(d => d.id === id); }
-function findEvent(id){ return S.events.find(e => e.id === id); }
+function copyText(txt, okMsg){
+  const fallback = () => {
+    const ta = document.createElement("textarea");
+    ta.value = txt;
+    ta.style.position = "fixed"; ta.style.top = "-1000px";
+    document.body.appendChild(ta); ta.select();
+    let ok = false;
+    try { ok = document.execCommand("copy"); } catch (e) { ok = false; }
+    document.body.removeChild(ta);
+    toast(ok ? okMsg : "Copying was blocked here. Use the download instead.");
+  };
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(txt).then(() => toast(okMsg), fallback);
+  } else fallback();
+}
 
 document.addEventListener("click", ev => {
   const t = ev.target.closest("button");
   if (!t) return;
 
-  if (t.dataset.tab) { tab = t.dataset.tab; render(); window.scrollTo({ top:0 }); return; }
+  if (t.dataset.tab)   { tab = t.dataset.tab; render(); window.scrollTo({ top:0 }); return; }
+  if (t.dataset.clsec) { clOpen[t.dataset.clsec] = !clOpen[t.dataset.clsec]; render(); return; }
+  if (t.dataset.tag) {
+    const c = clFor(clEvent), tg = t.dataset.tag, i = c.tags.indexOf(tg);
+    if (i > -1) c.tags.splice(i, 1);
+    else if (c.tags.length < TAG_CAP) c.tags.push(tg);
+    else { toast("Four tags at most — unpick one first."); return; }
+    commit(); return;
+  }
+  if (t.dataset.delspk) {
+    clFor(clEvent).speakers.splice(parseInt(t.dataset.delspk, 10), 1);
+    commit(); return;
+  }
+  if (t.dataset.opench) {
+    clEvent = t.dataset.opench; tab = "checklist"; render(); window.scrollTo({ top:0 }); return;
+  }
 
   switch (t.id) {
-    case "clearExample": {
-      S = { ...exampleState(), example:false, distributors:[], approvals:[], events:[],
-            approvalsCheckedOn:null };
-      commit(); toast("Example rows cleared. The board is yours now."); return;
-    }
     case "toggleEdit": editRows = !editRows; render(); return;
     case "addDist":
-      S.distributors.push({ id:uid(), country:"", name:"", target:0, booked:0 });
+      S.distributors.push({ id:uid(), country:"", distributor:"", terms:"", uncertain:false,
+        q3:0, booked:0, target:0, plan26:0, plan27:0, budget:0, months:{} });
       editRows = true; commit(); return;
+    case "reseed": {
+      const keep = { approvals:S.approvals, approvalsCheckedOn:S.approvalsCheckedOn };
+      S = Object.assign(seedState(), keep);
+      clEvent = null; commit();
+      toast("Reloaded the distributors and events as the sheet supplied them."); return;
+    }
+    case "togglePast": S.showPast = !S.showPast; commit(); return;
     case "pasteGo": {
       const raw = document.getElementById("pasteBox").value;
       if (!raw.trim()) { toast("Paste the cells first, then read them."); return; }
@@ -1267,11 +1893,11 @@ document.addEventListener("click", ev => {
       openMapper(raw.replace(/\r/g, "").split("\n").map(l => l.split(sep)));
       return;
     }
-    case "mapGo": applyMapper(); return;
+    case "mapGo": applyMapper(false); return;
     case "mapCancel": mapper = null; render(); return;
     case "markReviewed":
       S.approvalsCheckedOn = todayISO(); commit();
-      toast("Today's email input marked as given."); return;
+      toast("Today’s email input marked as given."); return;
     case "apprAdd": {
       const ref = document.getElementById("apprRef").value.trim();
       if (!ref) { toast("An order needs a reference before it can wait on anything."); return; }
@@ -1281,25 +1907,34 @@ document.addEventListener("click", ev => {
       commit(); toast("Added to the waiting list."); return;
     }
     case "evAdd": {
-      const name = document.getElementById("evName").value.trim();
-      if (!name) { toast("Give the event a name first."); return; }
-      S.events.push({ id:uid(), name,
+      const nm = document.getElementById("evName").value.trim();
+      const co = document.getElementById("evCountry").value.trim();
+      if (!nm || !co) { toast("An event needs at least a country and a name."); return; }
+      S.events.push({ id:uid(), country:co,
+        distributor: document.getElementById("evDist").value.trim(),
+        name:nm, kind:"BRD", month:"", rawNote:"", dayKnown:true, flag:"",
         date: document.getElementById("evDate").value || todayISO(),
         speaker: document.getElementById("evSpeaker").value.trim(),
-        partner: document.getElementById("evPartner").value.trim(),
-        status: { travel:"no_update", samples:"no_update", materials:"no_update",
-                  social:"no_update", certs:"no_update" } });
+        status:{ travel:"no_update", samples:"no_update", materials:"no_update",
+                 social:"no_update", certs:"no_update" } });
       commit(); toast("Event added — all five items start at “no update yet”."); return;
     }
-    case "copyReport": {
-      const txt = buildReport();
-      const done = () => toast("Report copied.");
-      if (navigator.clipboard && navigator.clipboard.writeText) {
-        navigator.clipboard.writeText(txt).then(done, () => selectReport());
-      } else selectReport();
+    case "addSpeaker":
+      clFor(clEvent).speakers.push({ title:"", name:"", abstract:"", cv:"", hoTitle:"", hoAbstract:"" });
+      commit(); return;
+    case "chasePartner":
+      copyText(buildChaseNote(clEvent, "partner"), "Partner’s outstanding items copied."); return;
+    case "chaseSpeaker":
+      copyText(buildChaseNote(clEvent, "speaker"), "Speaker’s outstanding items copied."); return;
+    case "clDownload": {
+      const e = findEvent(clEvent);
+      saveFile("brd-checklist-" +
+        String(e.country || "event").toLowerCase().replace(/[^a-z0-9]+/g, "-") +
+        "-" + e.date + ".txt", buildChecklistText(clEvent));
       return;
     }
-    case "dlReport": downloadReport(); return;
+    case "copyReport": copyText(buildReport(), "Report copied."); return;
+    case "dlReport": saveFile("botiss-daily-status-" + todayISO() + ".txt", buildReport()); return;
   }
 
   if (t.dataset.delDist) {
@@ -1319,7 +1954,11 @@ document.addEventListener("click", ev => {
     S.approvals = S.approvals.filter(a => a.id !== t.dataset.delAppr); commit(); return;
   }
   if (t.dataset.delEv) {
-    S.events = S.events.filter(e => e.id !== t.dataset.delEv); commit(); return;
+    const id = t.dataset.delEv;
+    S.events = S.events.filter(e => e.id !== id);
+    delete S.checklists[id];
+    if (clEvent === id) clEvent = null;
+    commit(); return;
   }
   if (t.dataset.fixbrand) {
     const e = findEvent(t.dataset.fixbrand);
@@ -1331,87 +1970,114 @@ document.addEventListener("click", ev => {
   }
 });
 
+/* Text fields save without a re-render, so the caret never jumps
+   mid-typing; the progress chip catches up shortly after typing stops. */
+document.addEventListener("input", ev => {
+  const el = ev.target;
+  if (el.dataset.cl)     { clFor(clEvent).values[el.dataset.cl] = el.value; commit(false); progSoon(); return; }
+  if (el.dataset.clqty)  { clFor(clEvent).values[el.dataset.clqty + "__qty"] = el.value; commit(false); return; }
+  if (el.dataset.clnote) { clFor(clEvent).values[el.dataset.clnote + "__note"] = el.value; commit(false); return; }
+  if (el.dataset.cltt)   { clFor(clEvent).tt[el.dataset.cltt] = el.value; commit(false); progSoon(); return; }
+  if (el.dataset.spk !== undefined && el.dataset.spkf) {
+    const c = clFor(clEvent), i = parseInt(el.dataset.spk, 10);
+    if (c.speakers[i]) { c.speakers[i][el.dataset.spkf] = el.value; commit(false); progSoon(); }
+    return;
+  }
+  if (el.dataset.evfield && el.dataset.ev) {
+    const e = findEvent(el.dataset.ev);
+    if (e) { e[el.dataset.evfield] = el.value; commit(false); }
+    return;
+  }
+  if (el.dataset.edit && el.dataset.id) {
+    const d = findDist(el.dataset.id);
+    if (!d) return;
+    const k = el.dataset.edit;
+    d[k] = ["q3","booked","target","plan26","plan27"].indexOf(k) > -1 ? parseMoney(el.value) : el.value;
+    if (k === "target") d.budget = Math.round(parseMoney(el.value) * 0.05 * 100) / 100;
+    commit(false);
+    return;
+  }
+});
+
+let progTimer = null;
+function progSoon(){
+  clearTimeout(progTimer);
+  progTimer = setTimeout(() => {
+    if (tab !== "checklist" || !clEvent) return;
+    const el = document.getElementById("clProg");
+    if (!el) return;
+    const p = clProgress(clEvent);
+    el.textContent = p.done + " of " + p.total + " required fields in · " + p.pct + "%";
+  }, 700);
+}
+
 document.addEventListener("change", ev => {
   const el = ev.target;
 
   if (el.id === "xlsFile" && el.files && el.files[0]) {
-    const f = el.files[0], reader = new FileReader();
+    const reader = new FileReader();
     reader.onload = () => {
       try {
         const wb = XLSX.read(reader.result, { type:"array" });
-        const sheet = wb.Sheets[wb.SheetNames[0]];
-        openMapper(XLSX.utils.sheet_to_json(sheet, { header:1, raw:true, defval:"" }));
+        const name = wb.SheetNames.find(n => /revenue/i.test(n)) || wb.SheetNames[0];
+        openMapper(XLSX.utils.sheet_to_json(wb.Sheets[name], { header:1, raw:true, defval:"" }));
       } catch (e) {
         toast("Could not read that file. Try saving it as .xlsx or paste the cells.");
       }
     };
     reader.onerror = () => toast("Could not read that file.");
-    reader.readAsArrayBuffer(f);
+    reader.readAsArrayBuffer(el.files[0]);
     return;
   }
-
   if (el.id === "asOfIn") { S.asOf = el.value || todayISO(); commit(); return; }
+  if (el.id === "clPick") { clEvent = el.value; render(); return; }
 
+  if (el.dataset.clcheck) { clFor(clEvent).values[el.dataset.clcheck] = el.checked; commit(); return; }
+  if (el.dataset.clset) {
+    const c = clFor(clEvent), key = el.dataset.clset, sub = el.dataset.sub;
+    const cur = Array.isArray(c.values[key]) ? c.values[key].slice() : [];
+    const i = cur.indexOf(sub);
+    if (el.checked && i === -1) cur.push(sub);
+    if (!el.checked && i > -1) cur.splice(i, 1);
+    c.values[key] = cur;
+    commit(); return;
+  }
   if (el.dataset.ev && el.dataset.item) {
     const e = findEvent(el.dataset.ev);
-    if (e) { e.status = { ...(e.status || {}), [el.dataset.item]: el.value }; commit(); }
+    if (e) { e.status = Object.assign({}, e.status || {}, { [el.dataset.item]: el.value }); commit(); }
     return;
   }
-  if (el.dataset.ev && el.dataset.evfield) {
-    const e = findEvent(el.dataset.ev);
-    if (e) {
-      e[el.dataset.evfield] = el.dataset.evfield === "date" ? el.value : el.value.trim();
-      commit();
-    }
-    return;
-  }
-  if (el.dataset.edit && el.dataset.id) {
-    const d = findDist(el.dataset.id);
-    if (d) {
-      d[el.dataset.edit] = (el.dataset.edit === "target" || el.dataset.edit === "booked")
-        ? parseMoney(el.value) : el.value;
-      commit();
-    }
-    return;
-  }
+  if (el.dataset.evfield && el.dataset.ev) { commit(); return; }
 });
 
-function selectReport(){
-  const pre = document.getElementById("reportBody");
-  if (!pre) return;
-  const r = document.createRange();
-  r.selectNodeContents(pre);
-  const sel = window.getSelection();
-  sel.removeAllRanges(); sel.addRange(r);
-  toast("Copying was blocked — the report is selected, press ⌘C / Ctrl+C.");
-}
+/* ---------- files ---------- */
 
 let downloads = null;
-function downloadReport(){
-  const name = "botiss-daily-status-" + todayISO() + ".txt";
-  if (!downloads) { selectReport(); return; }
-  downloads.save({ filename:name, data:buildReport() })
-    .then(() => toast("Report saved."))
+function saveFile(name, text){
+  if (!downloads) { copyText(text, "Downloads are unavailable here — copied instead."); return; }
+  downloads.save({ filename:name, data:text })
+    .then(() => toast("Saved."))
     .catch(err => {
       const code = err && err.code;
       if (code === "declined") return;
       if (code === "rate_limited") { toast("Wait a moment, then try the download again."); return; }
-      toast("Could not save the file here. Use Copy report instead.");
+      copyText(text, "Could not save a file here — copied instead.");
     });
 }
 
 /* =====================================================================
-   8. BOOT — render first, light capabilities up as they arrive.
+   10. BOOT — render first, light capabilities up as they arrive.
    ===================================================================== */
 
 function start(hot){
   if (hot && hot.tab) tab = hot.tab;
+  if (hot && hot.clEvent) clEvent = hot.clEvent;
   renderStorePill();
   render();
 }
 
 if (window.claude && window.claude.hot && window.claude.hot.snapshot) {
-  window.claude.hot.snapshot(() => ({ tab }));
+  window.claude.hot.snapshot(() => ({ tab, clEvent }));
 }
 if (window.claude && window.claude.hot && window.claude.hot.ready) {
   window.claude.hot.ready(start);
@@ -1426,11 +2092,12 @@ if (window.claude && typeof window.claude.use === "function") {
     ref.onSnapshot(snap => {
       if (snap.exists) {
         const remote = snap.data();
-        if (remote && remote.v) {
+        if (remote && remote.v === 2 && !snap.metadata.hasPendingWrites) {
           const mine = Date.parse(S.updatedAt || 0) || 0;
           const theirs = Date.parse(remote.updatedAt || 0) || 0;
-          if (!snap.metadata.hasPendingWrites && theirs >= mine) {
+          if (theirs >= mine) {
             S = JSON.parse(JSON.stringify(remote));
+            if (!S.checklists) S.checklists = {};
             saveLocal();
             render();
           }
@@ -1445,11 +2112,7 @@ if (window.claude && typeof window.claude.use === "function") {
     });
     dbRef = ref;
     ref.get().then(snap => {
-      if (!snap.exists) {
-        // Nothing shared yet: keep what is on screen and let the first
-        // real edit be what creates the shared copy.
-        storeMode = "shared"; renderStorePill();
-      }
+      if (!snap.exists) { storeMode = "shared"; renderStorePill(); }
     }).catch(() => {});
   }).catch(() => {});
 
